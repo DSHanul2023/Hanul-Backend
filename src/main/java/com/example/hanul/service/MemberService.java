@@ -30,6 +30,7 @@ public class MemberService {
 
     // 회원 생성
     public MemberEntity createMember(MemberDTO memberDTO) {
+
         MemberEntity memberEntity = new MemberEntity();
         memberEntity.setName(memberDTO.getName());
         memberEntity.setEmail(memberDTO.getEmail());
