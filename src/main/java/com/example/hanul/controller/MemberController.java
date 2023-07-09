@@ -17,12 +17,12 @@ public class MemberController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<MemberResponseDTO> registerMember(@RequestBody MemberDTO memberDTO) {
-        MemberResponseDTO createdMember = memberService.createMember(memberDTO);
+    public ResponseEntity<String> registerMember(@RequestBody MemberDTO memberDTO) {
+        MemberEntity createdMember = memberService.createMember(memberDTO);
         if (createdMember != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdMember);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Member registered successfully");
         } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to register member");
         }
     }
 
@@ -30,9 +30,7 @@ public class MemberController {
     public ResponseEntity<Object> login(@RequestBody MemberDTO memberDTO) {
         String token = memberService.loginAndGetToken(memberDTO.getEmail(), memberDTO.getPassword());
         if (token != null) {
-            MemberEntity authenticatedMember = memberService.getByCredentials(memberDTO.getEmail(), memberDTO.getPassword());
-            MemberResponseDTO memberResponseDTO = memberService.convertToMemberResponseDTO(authenticatedMember);
-            return ResponseEntity.ok(memberResponseDTO);
+            return ResponseEntity.ok("{\"message\": \"Login successful\", \"token\": \"" + token + "\"}");
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"message\": \"Invalid credentials\"}");
         }
