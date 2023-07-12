@@ -11,13 +11,13 @@ import javax.persistence.*;
 @Entity
 @Builder
 @Data
-@Table
+@Table(name = "Board")
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardEntity {
     @Id
-    // @GeneratedValue(generator = "system-identity")
-    // @GenericGenerator(name="system-identity", strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name="system-uuid", strategy="uuid")
     @Column(name = "board_idx")
     private String idx;
 
