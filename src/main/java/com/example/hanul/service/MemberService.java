@@ -4,6 +4,7 @@ import com.example.hanul.dto.MemberDTO;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.MemberRepository;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -53,22 +54,22 @@ public class MemberService {
     }
 
     // 로그인 및 토큰 발급
-    public String loginAndGetToken(String email, String password) {
+    public String loginAndGetToken(String email, String password, @Value("${jwt.secret}") String secret) {
         MemberEntity authenticatedMember = memberRepository.findByEmailAndPassword(email, password);
         if (authenticatedMember != null) {
             String memberId = authenticatedMember.getId();
-            return generateJwtToken(memberId, email);
+            return generateJwtToken(memberId, email, secret);
         }
         return null;
     }
 
-    private String generateJwtToken(String memberId, String email) {
+    private String generateJwtToken(String memberId, String email, String secret)  {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .claim("id", memberId)
-                .signWith(jwtSecretKey)
+                .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
     }
 }
