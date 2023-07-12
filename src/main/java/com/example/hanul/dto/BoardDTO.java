@@ -15,6 +15,7 @@ public class BoardDTO {
     private String image;
     private String author;
     private String date;
+    private String idx;
 
     public BoardDTO(final BoardEntity entity) {
         this.title = entity.getTitle();
@@ -22,11 +23,13 @@ public class BoardDTO {
         this.contents = entity.getContents();
         this.date = entity.getDate();
         this.image = entity.getImage();
+        this.idx = entity.getIdx();
     }
 
     public static BoardEntity toEntity(final BoardDTO dto) {
         return BoardEntity.builder()
                 .title(dto.getTitle())
+                .idx(dto.getIdx())
                 .contents(dto.getContents())
                 .author(dto.getAuthor())
                 .image(dto.getImage())
