@@ -37,8 +37,5 @@ public class TokenProvider {
                 .getBody();
 
         return claims.getSubject();
-
-
-
     }
 }
