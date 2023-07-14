@@ -3,7 +3,8 @@ package com.example.hanul.service;
 import com.example.hanul.dto.MemberDTO;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.MemberRepository;
-
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -18,6 +19,7 @@ import io.jsonwebtoken.security.Keys;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+@Slf4j
 @Service
 public class MemberService {
     private final MemberRepository memberRepository;
@@ -30,12 +32,15 @@ public class MemberService {
 
     // 회원 생성
     public MemberEntity createMember(MemberDTO memberDTO) {
-
         MemberEntity memberEntity = new MemberEntity();
         memberEntity.setName(memberDTO.getName());
         memberEntity.setEmail(memberDTO.getEmail());
         memberEntity.setPassword(memberDTO.getPassword());
         return memberRepository.save(memberEntity);
+    }
+
+    public MemberEntity getMemberById(String memberId) {
+        return memberRepository.findById(memberId).orElse(null);
     }
 
     // 인증
@@ -53,22 +58,22 @@ public class MemberService {
     }
 
     // 로그인 및 토큰 발급
-    public String loginAndGetToken(String email, String password) {
+    public String loginAndGetToken(String email, String password, @Value("${jwt.secret}") String secret) {
         MemberEntity authenticatedMember = memberRepository.findByEmailAndPassword(email, password);
         if (authenticatedMember != null) {
             String memberId = authenticatedMember.getId();
-            return generateJwtToken(memberId, email);
+            return generateJwtToken(memberId, email, secret);
         }
         return null;
     }
 
-    private String generateJwtToken(String memberId, String email) {
+    private String generateJwtToken(String memberId, String email, String secret) {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .claim("id", memberId)
-                .signWith(jwtSecretKey)
+                .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
     }
 }

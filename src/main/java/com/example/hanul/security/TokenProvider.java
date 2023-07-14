@@ -17,14 +17,14 @@ import java.util.Date;
 public class TokenProvider {
     private static final String SECRET_KEY = "a;dlak;alfkaj;lfj";
 
-    public String create(MemberEntity userEntity) {
+    public String create(MemberEntity memberEntity) {
         Date expiryDate = Date.from(
                 Instant.now().plus(1, ChronoUnit.DAYS));
 
         return Jwts.builder()
                 .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
-                .setSubject(userEntity.getId())
-                .setIssuer("demo app")
+                .setSubject(memberEntity.getId())
+                .setIssuer("hanul app")
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
                 .compact();
