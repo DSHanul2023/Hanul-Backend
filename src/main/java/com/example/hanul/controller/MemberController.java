@@ -3,6 +3,7 @@ package com.example.hanul.controller;
 import com.example.hanul.dto.MemberDTO;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.service.MemberService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,8 +28,8 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestBody MemberDTO memberDTO) {
-        String token = memberService.loginAndGetToken(memberDTO.getEmail(), memberDTO.getPassword());
+    public ResponseEntity<Object> login(@RequestBody MemberDTO memberDTO, @Value("${jwt.secret}") String secret) {
+        String token = memberService.loginAndGetToken(memberDTO.getEmail(), memberDTO.getPassword(), secret);
         if (token != null) {
             return ResponseEntity.ok("{\"message\": \"Login successful\", \"token\": \"" + token + "\"}");
         } else {
