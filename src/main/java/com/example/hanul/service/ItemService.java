@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -59,4 +60,20 @@ public class ItemService {
             return false;
         }
     }
+
+    public List<ItemEntity> getRecommendedItems(String counselingText) {
+        // 심리 상담 챗봇을 통해 추천된 상품 목록을 가져오는 로직을 구현
+        // counselingText를 기반으로 상품을 추천하고, 추천된 상품 목록을 반환
+        // 예시로 랜덤하게 상품을 생성하는 로직을 작성 -> 실제 추천 알고리즘을 구현
+        List<ItemEntity> recommendedItems = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            ItemEntity item = ItemEntity.builder()
+                    .itemNm("Recommended Item " + (i + 1))
+                    .itemDetail("Recommended Item Detail " + (i + 1))
+                    .build();
+            recommendedItems.add(item);
+        }
+        return recommendedItems;
+    }
+
 }

@@ -3,7 +3,7 @@ package com.example.hanul.service;
 import com.example.hanul.dto.MemberDTO;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.MemberRepository;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -19,6 +19,7 @@ import io.jsonwebtoken.security.Keys;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+@Slf4j
 @Service
 public class MemberService {
     private final MemberRepository memberRepository;
@@ -31,12 +32,15 @@ public class MemberService {
 
     // 회원 생성
     public MemberEntity createMember(MemberDTO memberDTO) {
-
         MemberEntity memberEntity = new MemberEntity();
         memberEntity.setName(memberDTO.getName());
         memberEntity.setEmail(memberDTO.getEmail());
         memberEntity.setPassword(memberDTO.getPassword());
         return memberRepository.save(memberEntity);
+    }
+
+    public MemberEntity getMemberById(String memberId) {
+        return memberRepository.findById(memberId).orElse(null);
     }
 
     // 인증
@@ -63,7 +67,7 @@ public class MemberService {
         return null;
     }
 
-    private String generateJwtToken(String memberId, String email, String secret)  {
+    private String generateJwtToken(String memberId, String email, String secret) {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
