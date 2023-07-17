@@ -1,40 +1,92 @@
 package com.example.hanul.controller;
 
 import com.example.hanul.dto.ItemDTO;
+import com.example.hanul.dto.TMDBMovieDTO;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
+import com.example.hanul.response.TMDBMovieListResponse;
 import com.example.hanul.service.ItemService;
 import com.example.hanul.service.MemberService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/items")
 public class ItemController {
     private final ItemService itemService;
     private final MemberService memberService;
+    private final WebClient webClient;
 
     @Autowired
-    public ItemController(ItemService itemService, MemberService memberService) {
+    public ItemController(ItemService itemService, MemberService memberService, WebClient.Builder webClientBuilder) {
         this.itemService = itemService;
         this.memberService = memberService;
+        this.webClient = webClientBuilder.build();
     }
 
-    // 멤버 아이디를 지정하고 해당 멤버를 찾아 상품을 등록
+    // 등록된 모든 상품을 가져옴
+    // 웹 응답의 기본 설정에 따라서 한번에 보여지는 데이터의 양이 제한되어 있을 수 있음
+    @GetMapping("/all")
+    public ResponseEntity<List<ItemEntity>> getAllItems() {
+        List<ItemEntity> items = itemService.getAllItems();
+        if (!items.isEmpty()) {
+            return ResponseEntity.ok(items);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+    // 등록된 모든 상품을 가져옴 (페이징 적용)
+    //http://localhost:8080/items/allpage?page=0&size=20 요청 -> 첫 번째 페이지에서 20개의 상품을 가져옵니다.
+    @GetMapping("/allpage")
+    public ResponseEntity<List<ItemEntity>> getAllItems(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ItemEntity> itemPage = itemService.getAllItemsPaged(pageable);
+
+        if (!itemPage.isEmpty()) {
+            return ResponseEntity.ok(itemPage.getContent());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    // 주어진 TMDB API 키를 사용하여 영화 목록을 가져와서 ItemEntity에 등록
     @PostMapping("/register")
     public ResponseEntity<String> registerItem(@RequestBody ItemDTO itemDTO) {
-        String memberId = "example_member_id"; // 멤버 아이디를 지정하세요
-        MemberEntity member = memberService.getMemberById(memberId);
-        if (member == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("해당 멤버를 찾을 수 없습니다.");
-        }
+        String apiKey = "819867390ff6ddfc8229c84893fb5298"; // TMDB API 키를 입력하세요
 
-        ItemEntity createdItem = itemService.saveItem(member, itemDTO);
-        if (createdItem != null) {
+        // TMDB API에서 영화 목록 가져오기
+        String url = "https://api.themoviedb.org/3/movie/popular?api_key=" + apiKey;
+        Mono<TMDBMovieListResponse> responseMono = webClient.get()
+                .uri(url)
+                .retrieve()
+                .bodyToMono(TMDBMovieListResponse.class);
+
+        // 응답 데이터에서 필요한 정보 추출하여 ItemEntity에 등록
+        TMDBMovieListResponse movieListResponse = responseMono.block();
+        if (movieListResponse != null) {
+            List<TMDBMovieDTO> movies = movieListResponse.getResults();
+            for (TMDBMovieDTO movie : movies) {
+                ItemEntity item = ItemEntity.builder()
+                        .itemNm(movie.getTitle())
+                        .itemDetail(movie.getOverview())
+                        .build();
+                itemService.saveItem(item);
+            }
+
             return ResponseEntity.status(HttpStatus.CREATED).body("상품 등록이 성공하였습니다.");
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("상품 등록에 실패하였습니다.");
@@ -74,7 +126,7 @@ public class ItemController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     //심리 상담 챗봇을 통해 추천된 상품 목록을 가져옴
     @PostMapping("/recommend")
     public ResponseEntity<List<ItemEntity>> recommendItems(@RequestBody String counselingText) {
@@ -95,7 +147,13 @@ public class ItemController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("해당 멤버를 찾을 수 없습니다.");
         }
 
-        ItemEntity createdItem = itemService.saveItem(member, itemDTO);
+        ItemEntity itemEntity = ItemEntity.builder()
+                .itemNm(itemDTO.getItemNm())
+                .itemDetail(itemDTO.getItemDetail())
+                .member(member)
+                .build();
+
+        ItemEntity createdItem = itemService.saveItem(itemEntity);
         if (createdItem != null) {
             return ResponseEntity.status(HttpStatus.CREATED).body("상품 저장이 성공하였습니다.");
         } else {
