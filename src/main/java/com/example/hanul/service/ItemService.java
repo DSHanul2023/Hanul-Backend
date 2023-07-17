@@ -6,8 +6,10 @@ import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.ItemRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,13 +23,7 @@ public class ItemService {
         this.itemRepository = itemRepository;
     }
 
-    public ItemEntity saveItem(MemberEntity member, ItemDTO itemDTO) {
-        ItemEntity itemEntity = ItemEntity.builder()
-                .itemNm(itemDTO.getItemNm())
-                .itemDetail(itemDTO.getItemDetail())
-                .member(member)
-                .build();
-
+    public ItemEntity saveItem(ItemEntity itemEntity) {
         try {
             return itemRepository.save(itemEntity);
         } catch (Exception e) {
@@ -75,5 +71,11 @@ public class ItemService {
         }
         return recommendedItems;
     }
+    public List<ItemEntity> getAllItems() {
+        return itemRepository.findAll();
+    }
 
+    public Page<ItemEntity> getAllItemsPaged(Pageable pageable) {
+        return itemRepository.findAll(pageable);
+    }
 }
