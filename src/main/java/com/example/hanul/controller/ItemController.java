@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// @PostMapping("/members/{memberId}/save") 제외하고는 전부 로그인 없이 사용 가능
-// 플라스크 추천 작성 후 수정 필요할 수 있음
 @RestController
 @RequestMapping("/items")
 public class ItemController {
