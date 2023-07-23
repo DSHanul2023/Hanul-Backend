@@ -9,6 +9,7 @@ import com.example.hanul.service.ItemService;
 import com.example.hanul.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,9 @@ public class ItemController {
     private final MemberService memberService;
     private final WebClient webClient;
 
+    @Value("${tmdb.api.key}")
+    private String tmdbApiKey;
+
     @Autowired
     public ItemController(ItemService itemService, MemberService memberService, WebClient.Builder webClientBuilder) {
         this.itemService = itemService;
@@ -46,8 +50,9 @@ public class ItemController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
+
     // 등록된 모든 상품을 가져옴 (페이징 적용)
-    //http://localhost:8080/items/allpage?page=0&size=20 요청 -> 첫 번째 페이지에서 20개의 상품을 가져옵니다.
+    // http://localhost:8080/items/allpage?page=0&size=20 요청 -> 첫 번째 페이지에서 20개의 상품을 가져옵니다.
     @GetMapping("/allpage")
     public ResponseEntity<List<ItemEntity>> getAllItems(
             @RequestParam(defaultValue = "0") int page,
@@ -66,7 +71,8 @@ public class ItemController {
     // 주어진 TMDB API 키를 사용하여 영화 목록을 가져와서 ItemEntity에 등록
     @PostMapping("/register")
     public ResponseEntity<String> registerItem(@RequestBody ItemDTO itemDTO) {
-        String apiKey = "819867390ff6ddfc8229c84893fb5298"; // TMDB API 키를 입력하세요
+        // TMDB API 키를 가져오는 메서드를 사용하여 TMDB API 키를 읽어옵니다.
+        String apiKey = itemService.getTmdbApiKey();
 
         // TMDB API에서 영화 목록 가져오기
         String url = "https://api.themoviedb.org/3/movie/popular?api_key=" + apiKey;
@@ -83,6 +89,7 @@ public class ItemController {
                 ItemEntity item = ItemEntity.builder()
                         .itemNm(movie.getTitle())
                         .itemDetail(movie.getOverview())
+                        .posterUrl("https://image.tmdb.org/t/p/w500" + movie.getPosterPath()) // 포스터 이미지 URL
                         .build();
                 itemService.saveItem(item);
             }
