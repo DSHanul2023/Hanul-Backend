@@ -11,6 +11,9 @@ public class TMDBMovieDTO {
     @JsonProperty("overview")
     private String overview;
 
+    @JsonProperty("poster_path")
+    private String posterPath; // 영화 포스터 이미지 경로
+
     public String getTitle() {
         return title;
     }
@@ -25,5 +28,13 @@ public class TMDBMovieDTO {
 
     public void setOverview(String overview) {
         this.overview = overview;
+    }
+
+    public String getPosterPath() {
+        return posterPath;
+    }
+
+    public void setPosterPath(String posterPath) {
+        this.posterPath = posterPath;
     }
 }

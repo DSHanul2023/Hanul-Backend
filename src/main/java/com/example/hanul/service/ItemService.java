@@ -6,6 +6,7 @@ import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.ItemRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +17,20 @@ import java.util.List;
 @Slf4j
 @Service
 public class ItemService {
+
+    @Value("${tmdb.api.key}")
+    private String tmdbApiKey;
+
     private final ItemRepository itemRepository;
 
     @Autowired
     public ItemService(ItemRepository itemRepository) {
         this.itemRepository = itemRepository;
+    }
+
+    // TMDB API 키를 가져오는 메서드
+    public String getTmdbApiKey() {
+        return tmdbApiKey;
     }
 
     public ItemEntity saveItem(ItemEntity itemEntity) {
@@ -59,8 +69,6 @@ public class ItemService {
 
     public List<ItemEntity> getRecommendedItems(String counselingText) {
         // 심리 상담 챗봇을 통해 추천된 상품 목록을 가져오는 로직을 구현
-        // counselingText를 기반으로 상품을 추천하고, 추천된 상품 목록을 반환
-        // 예시로 랜덤하게 상품을 생성하는 로직을 작성 -> 실제 추천 알고리즘을 구현
         List<ItemEntity> recommendedItems = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             ItemEntity item = ItemEntity.builder()
@@ -71,6 +79,7 @@ public class ItemService {
         }
         return recommendedItems;
     }
+
     public List<ItemEntity> getAllItems() {
         return itemRepository.findAll();
     }
