@@ -71,4 +71,7 @@ public class InquiryService {
         //(5)새 Todo리스트를 가져와 리턴
         return retrieve(entity.getMemberId());
     }
+    public List<InquiryEntity> searchInquiries(String memberId, String query) {
+        return repository.findByMemberIdAndInquiryNmContainingIgnoreCase(memberId, query);
+    }
 }

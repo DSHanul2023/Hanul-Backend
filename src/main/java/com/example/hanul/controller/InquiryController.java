@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 @RestController
-@RequestMapping("/inquiry")
+@RequestMapping("api/inquiry")
 public class InquiryController {
     @Autowired
     private InquiryService service;
@@ -60,6 +60,19 @@ public class InquiryController {
             ResponseDTO<InquiryDTO> response = ResponseDTO.<InquiryDTO>builder().data(dtos).build();
             return ResponseEntity.ok().body(response);
         }catch(Exception e){
+            String error = e.getMessage();
+            ResponseDTO<InquiryDTO> response = ResponseDTO.<InquiryDTO>builder().error(error).build();
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    @GetMapping("/{query}")
+    public ResponseEntity<?> searchInquiries(@AuthenticationPrincipal String memberId, @PathVariable("query") String query) {
+        try {
+            List<InquiryEntity> entities = service.searchInquiries(memberId, query);
+            List<InquiryDTO> dtos = entities.stream().map(InquiryDTO::new).collect(Collectors.toList());
+            ResponseDTO<InquiryDTO> response = ResponseDTO.<InquiryDTO>builder().data(dtos).build();
+            return ResponseEntity.ok().body(response);
+        } catch (Exception e) {
             String error = e.getMessage();
             ResponseDTO<InquiryDTO> response = ResponseDTO.<InquiryDTO>builder().error(error).build();
             return ResponseEntity.badRequest().body(response);
