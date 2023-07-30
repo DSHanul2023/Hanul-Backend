@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.time.LocalDateTime;
 
 @Builder
 @NoArgsConstructor
@@ -26,5 +27,6 @@ public class InquiryEntity {
     private String inquiryNm;
     private String inquiryDetail;
     private boolean state;
+    private String createdAt;
 }
 

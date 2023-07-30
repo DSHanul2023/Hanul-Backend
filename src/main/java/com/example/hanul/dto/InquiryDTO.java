@@ -15,12 +15,14 @@ public class InquiryDTO {
     private String inquiryNm;
     private String inquiryDetail;
     private boolean state;
+    private String createdAt;
 
     public InquiryDTO(final InquiryEntity entity){
         this.id = entity.getId();
         this.inquiryNm = entity.getInquiryNm();
         this.inquiryDetail = entity.getInquiryDetail();
         this.state = entity.isState();
+        this.createdAt = entity.getCreatedAt();
     }
     public static InquiryEntity toEntity(final InquiryDTO dto){
         return InquiryEntity.builder()
@@ -28,6 +30,7 @@ public class InquiryDTO {
                 .inquiryNm(dto.getInquiryNm())
                 .inquiryDetail(dto.getInquiryDetail())
                 .state(dto.isState())
+                .createdAt(dto.getCreatedAt())
                 .build();
     }
 }

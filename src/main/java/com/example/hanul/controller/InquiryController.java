@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 @RestController
@@ -22,6 +24,7 @@ public class InquiryController {
             InquiryEntity entity = InquiryDTO.toEntity(dto);
             entity.setId(null);
             entity.setMemberId(memberId);
+            entity.setCreatedAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             List<InquiryEntity> entities = service.create(entity);
             List<InquiryDTO> dtos = entities.stream().map(InquiryDTO::new).collect(Collectors.toList());
             ResponseDTO<InquiryDTO> response = ResponseDTO.<InquiryDTO>builder().data(dtos).build();
