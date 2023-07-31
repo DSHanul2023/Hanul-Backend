@@ -27,33 +27,16 @@ import java.util.List;
 public class ItemController {
     private final ItemService itemService;
     private final MemberService memberService;
-    private final WebClient webClient;
-
-    @Value("${tmdb.api.key}")
-    private String tmdbApiKey;
 
     @Autowired
-    public ItemController(ItemService itemService, MemberService memberService, WebClient.Builder webClientBuilder) {
+    public ItemController(ItemService itemService, MemberService memberService) {
         this.itemService = itemService;
         this.memberService = memberService;
-        this.webClient = webClientBuilder.build();
     }
 
     // 등록된 모든 상품을 가져옴
     // 웹 응답의 기본 설정에 따라서 한번에 보여지는 데이터의 양이 제한되어 있을 수 있음
     @GetMapping("/all")
-    public ResponseEntity<List<ItemEntity>> getAllItems() {
-        List<ItemEntity> items = itemService.getAllItems();
-        if (!items.isEmpty()) {
-            return ResponseEntity.ok(items);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-    }
-
-    // 등록된 모든 상품을 가져옴 (페이징 적용)
-    // http://localhost:8080/items/allpage?page=0&size=20 요청 -> 첫 번째 페이지에서 20개의 상품을 가져옵니다.
-    @GetMapping("/allpage")
     public ResponseEntity<List<ItemEntity>> getAllItems(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -67,20 +50,6 @@ public class ItemController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-
-    /* TMDB에서 가져온 영화 데이터를 등록
-    @PostMapping("/register")
-    public ResponseEntity<String> registerTMDBMovies() {
-        DataInitializer dataInitializer = new DataInitializer(itemService, webClient.mutate());
-        try {
-            dataInitializer.run();
-            return ResponseEntity.ok("TMDB 데이터 등록이 완료되었습니다.");
-        } catch (Exception e) {
-            log.error("TMDB 데이터 등록 중 오류가 발생하였습니다.", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("TMDB 데이터 등록 중 오류가 발생하였습니다.");
-        }
-    }*/
-
 
     // 주어진 상품 ID에 해당하는 상품의 세부 정보를 가져옴
     @GetMapping("/{itemId}")
