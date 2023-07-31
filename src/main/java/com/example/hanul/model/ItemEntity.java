@@ -21,13 +21,13 @@ public class ItemEntity {
     @Column(name = "item_id")
     private String id;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String itemNm;
 
-    @Column(nullable = false)
+    @Column(nullable = true, length = 500) // 길이를 500으로 변경
     private String itemDetail;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String posterUrl; // 영화 포스터 이미지 URL
 
     @ManyToOne(fetch = FetchType.LAZY)

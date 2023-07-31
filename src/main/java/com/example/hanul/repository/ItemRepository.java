@@ -11,4 +11,3 @@ import java.util.List;
 public interface ItemRepository extends JpaRepository<ItemEntity, String> {
     List<ItemEntity> findByMember(MemberEntity member);
 }
-
