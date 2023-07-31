@@ -7,9 +7,9 @@ import com.example.hanul.repository.ItemRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-
 import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +36,12 @@ public class ItemService {
     public ItemEntity saveItem(ItemEntity itemEntity) {
         try {
             return itemRepository.save(itemEntity);
+        } catch (DataAccessException e) {
+            log.error("상품 저장 중 데이터 접근 오류가 발생하였습니다.", e);
         } catch (Exception e) {
             log.error("상품 저장 중 오류가 발생하였습니다.", e);
-            return null;
         }
+        return null;
     }
 
     public ItemEntity getItemById(String itemId) {
@@ -86,5 +88,20 @@ public class ItemService {
 
     public Page<ItemEntity> getAllItemsPaged(Pageable pageable) {
         return itemRepository.findAll(pageable);
+    }
+
+    public ItemEntity registerItem(ItemDTO itemDTO) {
+
+        ItemEntity itemEntity = ItemEntity.builder()
+                .itemNm(itemDTO.getItemNm())
+                .itemDetail(itemDTO.getItemDetail())
+                .build();
+
+        try {
+            return itemRepository.save(itemEntity);
+        } catch (Exception e) {
+            log.error("상품 저장 중 오류가 발생하였습니다.", e);
+            return null;
+        }
     }
 }

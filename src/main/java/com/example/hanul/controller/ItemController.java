@@ -1,7 +1,7 @@
 package com.example.hanul.controller;
 
+import com.example.hanul.DataInitializer;
 import com.example.hanul.dto.ItemDTO;
-import com.example.hanul.dto.TMDBMovieDTO;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.response.TMDBMovieListResponse;
@@ -68,37 +68,19 @@ public class ItemController {
         }
     }
 
-    // 주어진 TMDB API 키를 사용하여 영화 목록을 가져와서 ItemEntity에 등록
+    /* TMDB에서 가져온 영화 데이터를 등록
     @PostMapping("/register")
-    public ResponseEntity<String> registerItem(@RequestBody ItemDTO itemDTO) {
-        // TMDB API 키를 가져오는 메서드를 사용하여 TMDB API 키를 읽어옵니다.
-        String apiKey = itemService.getTmdbApiKey();
-
-        // TMDB API에서 영화 목록 가져오기
-        String url = "https://api.themoviedb.org/3/movie/popular?api_key=" + apiKey;
-        Mono<TMDBMovieListResponse> responseMono = webClient.get()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(TMDBMovieListResponse.class);
-
-        // 응답 데이터에서 필요한 정보 추출하여 ItemEntity에 등록
-        TMDBMovieListResponse movieListResponse = responseMono.block();
-        if (movieListResponse != null) {
-            List<TMDBMovieDTO> movies = movieListResponse.getResults();
-            for (TMDBMovieDTO movie : movies) {
-                ItemEntity item = ItemEntity.builder()
-                        .itemNm(movie.getTitle())
-                        .itemDetail(movie.getOverview())
-                        .posterUrl("https://image.tmdb.org/t/p/w500" + movie.getPosterPath()) // 포스터 이미지 URL
-                        .build();
-                itemService.saveItem(item);
-            }
-
-            return ResponseEntity.status(HttpStatus.CREATED).body("상품 등록이 성공하였습니다.");
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("상품 등록에 실패하였습니다.");
+    public ResponseEntity<String> registerTMDBMovies() {
+        DataInitializer dataInitializer = new DataInitializer(itemService, webClient.mutate());
+        try {
+            dataInitializer.run();
+            return ResponseEntity.ok("TMDB 데이터 등록이 완료되었습니다.");
+        } catch (Exception e) {
+            log.error("TMDB 데이터 등록 중 오류가 발생하였습니다.", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("TMDB 데이터 등록 중 오류가 발생하였습니다.");
         }
-    }
+    }*/
+
 
     // 주어진 상품 ID에 해당하는 상품의 세부 정보를 가져옴
     @GetMapping("/{itemId}")
