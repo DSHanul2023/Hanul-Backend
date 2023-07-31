@@ -3,6 +3,7 @@ package com.example.hanul;
 import com.example.hanul.dto.ItemDTO;
 import com.example.hanul.dto.TMDBMovieDTO;
 
+import com.example.hanul.model.ItemEntity;
 import com.example.hanul.response.TMDBMovieListResponse;
 import com.example.hanul.service.ItemService;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +55,19 @@ public class DataInitializer implements CommandLineRunner {
                 ItemDTO itemDTO = new ItemDTO();
                 itemDTO.setItemNm(movie.getTitle());
                 itemDTO.setItemDetail(movie.getOverview());
-                itemService.registerItem(itemDTO);
+
+                // 포스터 URL을 기본 URL과 poster_path를 이용하여 구성
+                String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
+                itemDTO.setPosterUrl(posterUrl);
+
+                // ItemEntity를 생성하고 포스터 URL을 설정한 후 아이템으로 등록합니다.
+                ItemEntity itemEntity = ItemEntity.builder()
+                        .itemNm(itemDTO.getItemNm())
+                        .itemDetail(itemDTO.getItemDetail())
+                        .posterUrl(itemDTO.getPosterUrl()) // 포스터 URL 설정
+                        .build();
+
+                itemService.saveItemWithPoster(itemEntity);
             }
             log.info("TMDB 데이터 등록이 완료되었습니다.");
         } else {

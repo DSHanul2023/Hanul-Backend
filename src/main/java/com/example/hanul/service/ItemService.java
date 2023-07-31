@@ -43,6 +43,15 @@ public class ItemService {
         }
         return null;
     }
+    // ItemEntity와 함께 포스터 URL을 저장
+    public ItemEntity saveItemWithPoster(ItemEntity itemEntity) {
+        try {
+            return itemRepository.save(itemEntity);
+        } catch (Exception e) {
+            log.error("상품 저장 중 오류가 발생하였습니다.", e);
+            return null;
+        }
+    }
 
     public ItemEntity getItemById(String itemId) {
         return itemRepository.findById(itemId).orElse(null);
