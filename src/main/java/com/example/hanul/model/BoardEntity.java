@@ -22,6 +22,9 @@ public class BoardEntity {
     private String idx;
 
     @Column(nullable = false)
+    private String type;
+
+    @Column(nullable = false)
     private String title;
 
     @Column(nullable = false)
