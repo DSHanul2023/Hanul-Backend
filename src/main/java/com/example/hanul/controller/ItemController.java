@@ -38,7 +38,7 @@ public class ItemController {
     // 등록된 모든 상품을 가져옴
     // 웹 응답의 기본 설정에 따라서 한번에 보여지는 데이터의 양이 제한되어 있을 수 있음
     @GetMapping("/all")
-    public ResponseEntity<List<ItemEntity>> getAllItems(
+    public ResponseEntity<Page<ItemEntity>> getAllItems(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
@@ -46,7 +46,7 @@ public class ItemController {
         Page<ItemEntity> itemPage = itemService.getAllItemsPaged(pageable);
 
         if (!itemPage.isEmpty()) {
-            return ResponseEntity.ok(itemPage.getContent());
+            return ResponseEntity.ok(itemPage);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
