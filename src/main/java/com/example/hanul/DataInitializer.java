@@ -44,8 +44,8 @@ public class DataInitializer implements CommandLineRunner {
         int currentPage = 1;
 
         while (currentPage <= 500) { // 최대 500 페이지까지 생성하도록 수정
-            // TMDB API에서 영화 목록 가져오기 (페이지별로 데이터 요청)
-            String url = "https://api.themoviedb.org/3/movie/popular?api_key=" + apiKey + "&page=" + currentPage;
+            // TMDB API에서 한국어 영화 목록 가져오기 (페이지별로 데이터 요청, language 파라미터 추가)
+            String url = "https://api.themoviedb.org/3/movie/popular?api_key=" + apiKey + "&page=" + currentPage + "&language=ko-KR";
             Mono<TMDBMovieListResponse> responseMono = webClient.get()
                     .uri(url)
                     .retrieve()
