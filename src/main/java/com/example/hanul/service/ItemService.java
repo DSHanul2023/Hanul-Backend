@@ -95,6 +95,11 @@ public class ItemService {
         return itemRepository.findAll();
     }
 
+    // 총 아이템 수를 가져오는 메서드 추가
+    public long getTotalItemCount() {
+        return itemRepository.count();
+    }
+
     public Page<ItemEntity> getAllItemsPaged(Pageable pageable) {
         return itemRepository.findAll(pageable);
     }
