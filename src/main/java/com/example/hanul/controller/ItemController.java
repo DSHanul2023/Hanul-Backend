@@ -1,7 +1,7 @@
 package com.example.hanul.controller;
 
-import com.example.hanul.DataInitializer;
 import com.example.hanul.dto.ItemDTO;
+import com.example.hanul.dto.TMDBMovieDTO;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.response.TMDBMovieListResponse;
@@ -9,7 +9,6 @@ import com.example.hanul.service.ItemService;
 import com.example.hanul.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -27,16 +26,17 @@ import java.util.List;
 public class ItemController {
     private final ItemService itemService;
     private final MemberService memberService;
+    private final WebClient webClient;
 
     @Autowired
-    public ItemController(ItemService itemService, MemberService memberService) {
+    public ItemController(ItemService itemService, MemberService memberService, WebClient.Builder webClientBuilder) {
         this.itemService = itemService;
         this.memberService = memberService;
+        this.webClient = webClientBuilder.baseUrl("https://api.themoviedb.org/3").build();
     }
 
     // 등록된 모든 상품을 가져옴
     // 웹 응답의 기본 설정에 따라서 한번에 보여지는 데이터의 양이 제한되어 있을 수 있음
-    // getAllItems 메서드 수정
     @GetMapping("/all")
     public ResponseEntity<List<ItemEntity>> getAllItems(
             @RequestParam(defaultValue = "1") int page,

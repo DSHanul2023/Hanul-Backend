@@ -18,10 +18,10 @@ import java.util.List;
 @Service
 public class ItemService {
 
+    private final ItemRepository itemRepository;
+
     @Value("${tmdb.api.key}")
     private String tmdbApiKey;
-
-    private final ItemRepository itemRepository;
 
     @Autowired
     public ItemService(ItemRepository itemRepository) {
@@ -43,6 +43,7 @@ public class ItemService {
         }
         return null;
     }
+
     // ItemEntity와 함께 포스터 URL을 저장
     public ItemEntity saveItemWithPoster(ItemEntity itemEntity) {
         try {
