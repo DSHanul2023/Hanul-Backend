@@ -3,6 +3,7 @@ package com.example.hanul.service;
 import com.example.hanul.dto.MemberDTO;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.MemberRepository;
+import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -75,5 +76,14 @@ public class MemberService {
                 .claim("id", memberId)
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
+    }
+
+    public static String extractIdFromToken(String token, String secret) {
+        try {
+            Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+            return claims.get("id", String.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to extract memberId from token");
+        }
     }
 }
