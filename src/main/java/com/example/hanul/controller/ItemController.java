@@ -36,12 +36,13 @@ public class ItemController {
 
     // 등록된 모든 상품을 가져옴
     // 웹 응답의 기본 설정에 따라서 한번에 보여지는 데이터의 양이 제한되어 있을 수 있음
+    // getAllItems 메서드 수정
     @GetMapping("/all")
     public ResponseEntity<List<ItemEntity>> getAllItems(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page - 1, size);
         Page<ItemEntity> itemPage = itemService.getAllItemsPaged(pageable);
 
         if (!itemPage.isEmpty()) {
