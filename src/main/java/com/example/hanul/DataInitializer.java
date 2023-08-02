@@ -22,6 +22,10 @@ public class DataInitializer implements CommandLineRunner {
     @JsonProperty("total_pages")
     private int totalPages;
 
+    public int getTotalPages() {
+        return totalPages;
+    }
+
     private final ItemService itemService;
     private final WebClient webClient;
 

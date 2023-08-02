@@ -47,12 +47,20 @@ public class ItemService {
     // ItemEntity와 함께 포스터 URL을 저장
     public ItemEntity saveItemWithPoster(ItemEntity itemEntity) {
         try {
+            // 중복 등록 방지를 위해 이미 저장된 아이템인지 확인
+            ItemEntity existingItem = itemRepository.findByItemNm(itemEntity.getItemNm());
+            if (existingItem != null) {
+                log.info("이미 등록된 상품: " + existingItem.getItemNm());
+                return existingItem;
+            }
+
             return itemRepository.save(itemEntity);
         } catch (Exception e) {
             log.error("상품 저장 중 오류가 발생하였습니다.", e);
             return null;
         }
     }
+
 
     public ItemEntity getItemById(String itemId) {
         return itemRepository.findById(itemId).orElse(null);
