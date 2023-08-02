@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface ItemRepository extends JpaRepository<ItemEntity, String> {
     List<ItemEntity> findByMember(MemberEntity member);
+    ItemEntity findByItemNm(String itemNm);
 }
-
