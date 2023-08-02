@@ -2,9 +2,7 @@ package com.example.hanul.security;
 
 
 import com.example.hanul.model.MemberEntity;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -32,8 +30,23 @@ public class TokenProvider {
                 .compact();
         return jws;
     }
-
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
+            return true;
+        } catch (ExpiredJwtException e) {
+            // 토큰이 만료된 경우
+            return false;
+        } catch (JwtException | IllegalArgumentException e) {
+            // 토큰의 유효성 검증 실패한 경우
+            return false;
+        }
+    }
     public String validateAndGetUserId(String token) {
+        Claims claims = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+        return claims.get("id", String.class);
+    }
+/*    public String validateAndGetUserId(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(SECRET_KEY)
                 .requireIssuer(("demo app"))
@@ -41,5 +54,5 @@ public class TokenProvider {
                 .getBody();
 
         return claims.getSubject();
-    }
+    }*/
 }

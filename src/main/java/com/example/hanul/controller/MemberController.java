@@ -31,6 +31,9 @@ public class MemberController {
     public ResponseEntity<Object> login(@RequestBody MemberDTO memberDTO, @Value("${jwt.secret}") String secret) {
         String token = memberService.loginAndGetToken(memberDTO.getEmail(), memberDTO.getPassword(), secret);
         if (token != null) {
+            String memberId = memberService.extractIdFromToken(token,secret); // 토큰에서 memberId 추출
+            memberDTO.setId(memberId); // InquiryDTO에 memberId 설정
+
             return ResponseEntity.ok("{\"message\": \"Login successful\", \"token\": \"" + token + "\"}");
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"message\": \"Invalid credentials\"}");
