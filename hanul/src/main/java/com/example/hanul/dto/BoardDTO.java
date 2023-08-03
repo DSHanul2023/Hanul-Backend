@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardDTO {
+    private String type;
     private String title;
     private String contents;
     private String image;
@@ -18,6 +19,7 @@ public class BoardDTO {
     private String idx;
 
     public BoardDTO(final BoardEntity entity) {
+        this.type = entity.getType();
         this.title = entity.getTitle();
         this.author = entity.getAuthor();
         this.contents = entity.getContents();
@@ -28,6 +30,7 @@ public class BoardDTO {
 
     public static BoardEntity toEntity(final BoardDTO dto) {
         return BoardEntity.builder()
+                .type(dto.getType())
                 .title(dto.getTitle())
                 .idx(dto.getIdx())
                 .contents(dto.getContents())
