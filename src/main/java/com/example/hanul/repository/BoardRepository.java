@@ -1,6 +1,7 @@
 package com.example.hanul.repository;
 
 import com.example.hanul.model.BoardEntity;
+import com.example.hanul.model.InquiryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,4 +15,8 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     List<BoardEntity> findAll();
     long count();
+
+
+    List<BoardEntity> findByIdxContainingIgnoreCase(String idx);
+
 }
