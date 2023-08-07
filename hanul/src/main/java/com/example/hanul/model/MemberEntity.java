@@ -32,4 +32,7 @@ public class MemberEntity {
 
     @Column(nullable = false)
     private String password;
+
+    @Column
+    private String profilePictureUrl; // 프로필 사진 URL을 저장하는 필드
 }

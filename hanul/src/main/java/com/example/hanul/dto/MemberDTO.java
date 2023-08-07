@@ -18,6 +18,11 @@ public class MemberDTO {
     private String newPassword;
     private String token;
 
+    public MemberDTO(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+
     public static MemberEntity toEntity(final MemberDTO dto) {
         return MemberEntity.builder()
                 .id(dto.getId())
