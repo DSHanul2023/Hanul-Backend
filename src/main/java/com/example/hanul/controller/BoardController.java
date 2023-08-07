@@ -1,8 +1,10 @@
 package com.example.hanul.controller;
 
 import com.example.hanul.dto.BoardDTO;
+import com.example.hanul.dto.InquiryDTO;
 import com.example.hanul.dto.ResponseDTO;
 import com.example.hanul.model.BoardEntity;
+import com.example.hanul.model.InquiryEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.MemberRepository;
 import com.example.hanul.service.BoardService;
@@ -46,6 +48,7 @@ public class BoardController {
         try {
             BoardEntity entity = BoardDTO.toEntity(dto);
             entity.setAuthor(member.get().getName());
+            entity.setMember_id(member.get().getId());
             entity.setDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             List<BoardEntity> entities = service.create(entity);
             List<BoardDTO> dtos = entities.stream().map(BoardDTO::new).collect(Collectors.toList());
@@ -92,6 +95,19 @@ public class BoardController {
             String error = e.getMessage();
             ResponseDTO<BoardDTO> response = ResponseDTO.<BoardDTO>builder().error(error).build();
 
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    @GetMapping("/{query}")
+    public ResponseEntity<?> searchBoard(@PathVariable("query") String query) {
+        try {
+            List<BoardEntity> entities = service.searchBoard(query);
+            List<BoardDTO> dtos = entities.stream().map(BoardDTO::new).collect(Collectors.toList());
+            ResponseDTO<BoardDTO> response = ResponseDTO.<BoardDTO>builder().data(dtos).build();
+            return ResponseEntity.ok().body(response);
+        } catch (Exception e) {
+            String error = e.getMessage();
+            ResponseDTO<BoardDTO> response = ResponseDTO.<BoardDTO>builder().error(error).build();
             return ResponseEntity.badRequest().body(response);
         }
     }

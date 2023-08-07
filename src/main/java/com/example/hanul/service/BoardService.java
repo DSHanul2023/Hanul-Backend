@@ -1,6 +1,7 @@
 package com.example.hanul.service;
 
 import com.example.hanul.model.BoardEntity;
+import com.example.hanul.model.InquiryEntity;
 import com.example.hanul.repository.BoardRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,5 +63,8 @@ public class BoardService {
 
     public List<BoardEntity> update(BoardEntity entity) {
         return boardRepository.findAll();
+    }
+    public List<BoardEntity> searchBoard(String query) {
+        return boardRepository.findByIdxContainingIgnoreCase(query);
     }
 }
