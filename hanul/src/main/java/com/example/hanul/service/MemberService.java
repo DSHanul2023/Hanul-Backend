@@ -15,6 +15,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.Optional;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -59,9 +60,17 @@ public MemberService(MemberRepository memberRepository, TokenProvider tokenProvi
     }
 
     // 인증
+//    public MemberEntity getByCredentials(String email, String password) {
+//        return memberRepository.findByEmailAndPassword(email, password);
+//    }
     public MemberEntity getByCredentials(String email, String password) {
-        return memberRepository.findByEmailAndPassword(email, password);
+        MemberEntity memberEntity = memberRepository.findByEmail(email);
+        if (memberEntity != null && passwordEncoder.matches(password, memberEntity.getPassword())) {
+            return memberEntity;
+        }
+        return null;
     }
+
 
     // 로그아웃
     public void logout() {
@@ -86,6 +95,21 @@ public MemberService(MemberRepository memberRepository, TokenProvider tokenProvi
     public MemberDTO loginAndGetMemberInfo(String email, String password, @Value("${jwt.secret}") String secret) {
         MemberEntity authenticatedMember = memberRepository.findByEmailAndPassword(email, password);
         if (authenticatedMember != null) {
+            String memberId = authenticatedMember.getId();
+            MemberDTO memberDTO = new MemberDTO();
+            memberDTO.setId(memberId);
+            memberDTO.setName(authenticatedMember.getName());
+            memberDTO.setEmail(authenticatedMember.getEmail());
+            memberDTO.setToken(generateJwtToken(memberId, email, secret));
+            return memberDTO;
+        }
+        return null;
+    }
+
+    // 로그인
+    public MemberDTO login(String email, String password, @Value("${jwt.secret}") String secret) {
+        MemberEntity authenticatedMember = memberRepository.findByEmailAndPassword(email, password);
+        if (authenticatedMember != null && passwordEncoder.matches(password, authenticatedMember.getPassword())) {
             String memberId = authenticatedMember.getId();
             MemberDTO memberDTO = new MemberDTO();
             memberDTO.setId(memberId);
@@ -134,7 +158,8 @@ public MemberService(MemberRepository memberRepository, TokenProvider tokenProvi
 
     // 멤버 정보 변경
     public boolean updateMemberInfo(MemberDTO memberDTO) {
-        MemberEntity memberEntity = memberRepository.findById(memberDTO.getId()).orElse(null);
+        String memberId = tokenProvider.validateAndGetUserId(memberDTO.getToken());
+        MemberEntity memberEntity = memberRepository.findById(memberId).orElse(null);
         if (memberEntity == null) {
             return false;
         }
@@ -151,6 +176,34 @@ public MemberService(MemberRepository memberRepository, TokenProvider tokenProvi
         memberRepository.save(memberEntity);
         return true;
     }
+
+    // 비밀번호 변경
+    public boolean updatePassword(String memberId, String currentPassword, String newPassword) {
+        MemberEntity memberEntity = memberRepository.findById(memberId).orElse(null);
+        if (memberEntity == null) {
+            return false;
+        }
+
+//        String hashedPassword = passwordEncoder.encode(newPassword);
+        if (currentPassword.equals(memberEntity.getPassword())) {
+            memberEntity.setPassword(newPassword);
+            memberRepository.save(memberEntity);
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean deleteMember(String memberId) {
+        Optional<MemberEntity> memberOptional = memberRepository.findById(memberId);
+        if (memberOptional.isPresent()) {
+            MemberEntity member = memberOptional.get();
+            memberRepository.delete(member);
+            return true;
+        }
+        return false;
+    }
+
 
 
 }
