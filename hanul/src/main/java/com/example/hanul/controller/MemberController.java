@@ -6,6 +6,8 @@ import com.example.hanul.service.MemberService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,8 +25,15 @@ public class MemberController {
     @PostMapping("/register")
     public ResponseEntity<String> registerMember(@RequestBody MemberDTO memberDTO) {
         MemberEntity createdMember = memberService.createMember(memberDTO);
+//        MemberDTO responseMemberDTO = memberDTO.builder()
+//                .id(createdMember.getId())
+//                .name(createdMember.getName())
+//                .email(createdMember.getEmail())
+//                .password(createdMember.getPassword())
+//                .build();
         if (createdMember != null) {
             return ResponseEntity.status(HttpStatus.CREATED).body("Member registered successfully");
+//            return ResponseEntity.ok(responseMemberDTO);
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to register member");
         }
@@ -53,6 +62,17 @@ public class MemberController {
         }
     }
 
+//    @PostMapping("/login")
+//    public ResponseEntity<Object> login(@RequestBody MemberDTO memberDTO, @Value("${jwt.secret}") String secret) {
+//        MemberDTO loggedInMember = memberService.login(memberDTO.getEmail(), memberDTO.getPassword(), secret);
+//        if (loggedInMember != null) {
+//            return ResponseEntity.ok(loggedInMember);
+//        } else {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"message\": \"Invalid credentials\"}");
+//        }
+//    }
+
+
     @PostMapping("/logout")
     public ResponseEntity<Object> logout() {
         memberService.logout();
@@ -75,7 +95,8 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
     }
 
-    @PostMapping("/updateMemberInfo")
+    @PutMapping("/updateMemberInfo")
+    @PreAuthorize("isAuthenticated() and #memberDTO.id == authentication.principal.id")
     public ResponseEntity<MemberDTO> updateMemberInfo(@RequestBody MemberDTO memberDTO) {
         boolean success = memberService.updateMemberInfo(memberDTO);
         if (success) {
@@ -92,7 +113,26 @@ public class MemberController {
         }
     }
 
+    @PutMapping("/updatePassword")
+    @PreAuthorize("isAuthenticated() and #memberDTO.id == authentication.principal.id")
+    public ResponseEntity<Object> updatePassword(@RequestBody MemberDTO memberDTO) {
+        boolean success = memberService.updatePassword(memberDTO.getId(), memberDTO.getPassword(), memberDTO.getNewPassword());
+        if (success) {
+            return ResponseEntity.ok("{\"message\": \"Password updated successfully\"}");
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Current password does not match\"}");
+        }
+    }
 
-
+    @DeleteMapping("/deleteMember")
+    @PreAuthorize("isAuthenticated() and #memberDTO.id == authentication.principal.id")
+    public ResponseEntity<String> deleteMember(@RequestBody MemberDTO memberDTO) {
+        boolean success = memberService.deleteMember(memberDTO.getId());
+        if (success) {
+            return ResponseEntity.ok("Member deleted successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Member not found");
+        }
+    }
 
 }

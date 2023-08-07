@@ -55,7 +55,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                     .and()
                     .authorizeRequests().antMatchers("/", "/members/**", "/items/**").permitAll()
-                    .antMatchers("/getMemberInfo").authenticated() // Add this line to secure /getMemberInfo
+//                    .antMatchers("/getMemberInfo").authenticated() // Add this line to secure /getMemberInfo
                     .anyRequest().authenticated();
         } catch (Exception e) {
             throw new RuntimeException(e);
