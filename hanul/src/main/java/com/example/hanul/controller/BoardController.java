@@ -99,10 +99,17 @@ public class BoardController {
         }
     }
     @GetMapping("/{query}")
-    public ResponseEntity<?> searchBoard(@PathVariable("query") String query) {
+    public ResponseEntity<?> searchBoard(@AuthenticationPrincipal String userId,@PathVariable("query") String query) {
         try {
             List<BoardEntity> entities = service.searchBoard(query);
-            List<BoardDTO> dtos = entities.stream().map(BoardDTO::new).collect(Collectors.toList());
+            List<BoardDTO> dtos = entities.stream().map(boardEntity -> {
+                BoardDTO dto = new BoardDTO(boardEntity);
+                // 현재 로그인된 사용자의 memberid와 글 작성자의 memberid가 일치하는지 확인
+                if (userId.equals(boardEntity.getMemberId())) {
+                    dto.setCanEdit(true);
+                }
+                return dto;
+            }).collect(Collectors.toList());
             ResponseDTO<BoardDTO> response = ResponseDTO.<BoardDTO>builder().data(dtos).build();
             return ResponseEntity.ok().body(response);
         } catch (Exception e) {
