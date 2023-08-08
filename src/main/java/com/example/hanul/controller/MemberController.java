@@ -34,7 +34,8 @@ public class MemberController {
             String memberId = memberService.extractIdFromToken(token,secret); // 토큰에서 memberId 추출
             memberDTO.setId(memberId); // InquiryDTO에 memberId 설정
 
-            return ResponseEntity.ok("{\"message\": \"Login successful\", \"token\": \"" + token + "\"}");
+            String responseJson = "{\"message\": \"Login successful\", \"token\": \"" + token + "\", \"memberId\": \"" + memberId + "\"}";
+            return ResponseEntity.ok(responseJson);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"message\": \"Invalid credentials\"}");
         }
