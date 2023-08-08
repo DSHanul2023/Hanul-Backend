@@ -25,7 +25,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .httpBasic().disable()
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                     .and()
-                    .authorizeRequests().antMatchers("/", "/members/**", "/items/**").permitAll()
+                    .authorizeRequests().antMatchers("/", "/members/**", "/items/**", "/dialogFlowWebHook").permitAll()
                     .anyRequest().authenticated();
         } catch (Exception e) {
             throw new RuntimeException(e);
