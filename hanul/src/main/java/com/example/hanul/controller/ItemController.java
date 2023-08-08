@@ -119,10 +119,16 @@ public class ItemController {
                 .build();
 
         // 중복 등록 방지를 위해 이미 저장된 아이템인지 확인
-        ItemEntity existingItem = itemService.saveItemWithPoster(itemEntity);
-        if (existingItem != null) {
+//        ItemEntity existingItem = itemService.saveItemWithPoster(itemEntity);
+//        if (existingItem != null) {
+//            return ResponseEntity.status(HttpStatus.OK).body("이미 등록된 상품입니다.");
+//        }
+
+        boolean itemAlreadySaved = itemService.checkIfItemAlreadySaved(member, itemDTO);
+        if (itemAlreadySaved) {
             return ResponseEntity.status(HttpStatus.OK).body("이미 등록된 상품입니다.");
         }
+
 
         ItemEntity createdItem = itemService.saveItem(itemEntity);
         if (createdItem != null) {
