@@ -41,8 +41,10 @@ public class BoardService {
     }
 
     public List<BoardEntity> delete(BoardEntity entity) {
-        validate(entity);
-
+        if(entity == null) {
+            log.warn("Entity cannot be null.");
+            throw new RuntimeException(("Entity cannot be null."));
+        }
         try {
             boardRepository.delete(entity);
         } catch (Exception e) {
