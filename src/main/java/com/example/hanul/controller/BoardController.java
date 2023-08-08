@@ -48,7 +48,7 @@ public class BoardController {
         try {
             BoardEntity entity = BoardDTO.toEntity(dto);
             entity.setAuthor(member.get().getName());
-            entity.setMember_id(member.get().getId());
+            entity.setMemberid(member.get().getId());
             entity.setDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             List<BoardEntity> entities = service.create(entity);
             List<BoardDTO> dtos = entities.stream().map(BoardDTO::new).collect(Collectors.toList());

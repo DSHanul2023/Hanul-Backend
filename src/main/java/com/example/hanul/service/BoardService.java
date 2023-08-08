@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -30,15 +31,7 @@ public class BoardService {
     }
 
     public List<BoardEntity> create(BoardEntity entity) {
-        if (entity == null) {
-            log.warn("Entity cannot be null.");
-            throw new RuntimeException(("Entity cannot be null."));
-        }
-
-        if(entity.getAuthor() == null) {
-            log.warn("Unknown user.");
-            throw new RuntimeException(("Unknown user."));
-        }
+        validate(entity);
 
         boardRepository.save(entity);
 
@@ -60,8 +53,21 @@ public class BoardService {
 
         return boardRepository.findAll();
     }
+    public List<BoardEntity> update(final BoardEntity entity) {
+        if(entity == null) {
+            log.warn("Entity cannot be null.");
+            throw new RuntimeException(("Entity cannot be null."));
+        }        final Optional<BoardEntity> original = boardRepository.findById(entity.getIdx());
+        original.ifPresent(board -> {
+            //(3) 반환된 TodoEntity가 존재하면 값을 새 entity 값으로 덮어씌운다.
+            board.setTitle(entity.getTitle());
+            board.setContents(entity.getContents());
+            if(entity.getImage().isEmpty()){
+                board.setImage(entity.getImage());
+            }
 
-    public List<BoardEntity> update(BoardEntity entity) {
+            boardRepository.save(board);
+        });
         return boardRepository.findAll();
     }
     public List<BoardEntity> searchBoard(String query) {
