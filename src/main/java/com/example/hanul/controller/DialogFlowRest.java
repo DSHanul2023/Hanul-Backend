@@ -5,20 +5,21 @@ import com.google.api.services.dialogflow.v3.model.GoogleCloudDialogflowV2Webhoo
 import com.google.api.services.dialogflow.v3.model.GoogleCloudDialogflowV2WebhookResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/orchid/api")
 public class DialogFlowRest {
 
     private static JacksonFactory jacksonFactory = JacksonFactory.getDefaultInstance();
+
+    @GetMapping
+    public String main(){
+        return "ngrok 연결 테스트";
+    }
 
     @RequestMapping(method = RequestMethod.POST, value = "/dialogFlowWebHook")
     public ResponseEntity<?> dialogFlowWebHook(@RequestBody String requestStr, HttpServletRequest servletRequest) throws IOException {
