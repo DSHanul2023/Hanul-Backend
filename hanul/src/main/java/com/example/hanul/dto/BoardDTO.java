@@ -18,6 +18,11 @@ public class BoardDTO {
     private String date;
     private String idx;
     private String memberId;
+    private boolean canEdit;
+
+    public void setCanEdit(boolean canEdit) {
+        this.canEdit = canEdit;
+    }
     public BoardDTO(final BoardEntity entity) {
         this.type = entity.getType();
         this.title = entity.getTitle();
