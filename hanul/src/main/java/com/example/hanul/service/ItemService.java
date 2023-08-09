@@ -1,6 +1,7 @@
 package com.example.hanul.service;
 
 import com.example.hanul.dto.ItemDTO;
+import com.example.hanul.model.BoardEntity;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.ItemRepository;

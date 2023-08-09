@@ -1,7 +1,10 @@
 package com.example.hanul.controller;
 
+import com.example.hanul.dto.BoardDTO;
 import com.example.hanul.dto.ItemDTO;
+import com.example.hanul.dto.ResponseDTO;
 import com.example.hanul.dto.TMDBMovieDTO;
+import com.example.hanul.model.BoardEntity;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.ItemRepository;
@@ -16,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -115,6 +120,7 @@ public class ItemController {
         ItemEntity itemEntity = ItemEntity.builder()
                 .itemNm(itemDTO.getItemNm())
                 .itemDetail(itemDTO.getItemDetail())
+                .posterUrl(itemDTO.getPosterUrl())
                 .member(member)
                 .build();
 
