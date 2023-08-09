@@ -30,14 +30,21 @@ public class ChatController {
         return "chat 확인 test";
     }
 
-    @PostMapping("/save")
-    public ResponseEntity<String> saveChatMessage(@RequestBody ChatDTO chatDTO) {
+    @PostMapping("/chatdialogflow")
+    public ResponseEntity<String> handleChatMessage(@RequestBody ChatDTO chatDTO) {
         ChatEntity savedChat = chatService.saveChatMessage(chatDTO.getMemberId(), chatDTO.getMessage());
+
         if (savedChat != null) {
             try {
                 // Dialogflow에 사용자 입력 전달
-                String dialogflowResponse = dialogflowService.sendToDialogflow(chatDTO.getMessage());
-                return ResponseEntity.status(HttpStatus.CREATED).body(dialogflowResponse);
+                String userMessage = chatDTO.getMessage();
+                String dialogflowResponse = dialogflowService.sendToDialogflow(userMessage);
+
+                String responseMessage = "[사용자 채팅 저장 및 응답]\n"
+                        + "입력: " + userMessage + "\n"
+                        + "응답: " + dialogflowResponse;
+
+                return ResponseEntity.status(HttpStatus.OK).body(responseMessage);
             } catch (IOException e) {
                 e.printStackTrace();
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to communicate with Dialogflow");
@@ -57,14 +64,4 @@ public class ChatController {
         }
     }
 
-    @PostMapping("/testdialogflow")
-    public ResponseEntity<String> testDialogflow(@RequestBody ChatDTO chatDTO) {
-        try {
-            String dialogflowResponse = dialogflowService.sendToDialogflow(chatDTO.getMessage());
-            return ResponseEntity.status(HttpStatus.OK).body(dialogflowResponse);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to communicate with Dialogflow");
-        }
-    }
 }
