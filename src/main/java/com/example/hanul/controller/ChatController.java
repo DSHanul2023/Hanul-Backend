@@ -56,4 +56,15 @@ public class ChatController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
+
+    @PostMapping("/testdialogflow")
+    public ResponseEntity<String> testDialogflow(@RequestBody ChatDTO chatDTO) {
+        try {
+            String dialogflowResponse = dialogflowService.sendToDialogflow(chatDTO.getMessage());
+            return ResponseEntity.status(HttpStatus.OK).body(dialogflowResponse);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to communicate with Dialogflow");
+        }
+    }
 }
