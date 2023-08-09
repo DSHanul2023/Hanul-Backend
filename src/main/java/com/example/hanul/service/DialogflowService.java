@@ -5,8 +5,8 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.dialogflow.v2.*;
 import org.springframework.stereotype.Service;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 public class DialogflowService {
@@ -14,7 +14,10 @@ public class DialogflowService {
 
     public DialogflowService() throws IOException {
         // JSON 키 파일의 경로와 이름에 맞게 수정
-        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream("hanulwellness-odgf-9b92e16f6ac1.json"));
+        ClassLoader classLoader = getClass().getClassLoader();
+        InputStream jsonKeyStream = classLoader.getResourceAsStream("hanulwellness-odgf-9b92e16f6ac1.json");
+
+        GoogleCredentials credentials = GoogleCredentials.fromStream(jsonKeyStream);
 
         SessionsSettings sessionsSettings =
                 SessionsSettings.newBuilder()
