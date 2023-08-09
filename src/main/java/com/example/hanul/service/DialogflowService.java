@@ -33,11 +33,17 @@ public class DialogflowService {
 
         SessionName session = SessionName.of(projectId, sessionId);
 
-        TextInput.Builder textInput = TextInput.newBuilder().setText(userMessage);
-        QueryInput queryInput = QueryInput.newBuilder().setText(textInput).build();
+        TextInput.Builder textInput = TextInput.newBuilder()
+                .setText(userMessage)
+                .setLanguageCode("ko-KR"); // 한국어 언어 코드 설정
+
+        QueryInput queryInput = QueryInput.newBuilder()
+                .setText(textInput)
+                .build();
 
         DetectIntentResponse response = sessionsClient.detectIntent(session.toString(), queryInput);
 
         return response.getQueryResult().getFulfillmentText();
     }
+
 }
