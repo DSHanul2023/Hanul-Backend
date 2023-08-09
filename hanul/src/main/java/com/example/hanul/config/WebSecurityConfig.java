@@ -24,27 +24,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder(); // Use BCryptPasswordEncoder for password encoding
     }
 
-//    @Override
-//    protected void configure(HttpSecurity http) {
-//        try {
-//            http.cors()
-//                    .and()
-//                    .csrf().disable()
-//                    .httpBasic().disable()
-//                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                    .and()
-//                    .authorizeRequests().antMatchers("/", "/members/**", "/items/**").permitAll()
-//                    .anyRequest().authenticated();
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        http.addFilterAfter(
-//                jwtAuthenticationFilter,
-//                CorsFilter.class
-//        );
-//    }
-
     @Override
     protected void configure(HttpSecurity http) {
         try {
@@ -55,7 +34,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                     .and()
                     .authorizeRequests().antMatchers("/", "/members/**", "/items/**", "/dialogFlowWebHook", "/chats/**").permitAll()
-//                    .antMatchers("/getMemberInfo").authenticated() // Add this line to secure /getMemberInfo
                     .anyRequest().authenticated();
         } catch (Exception e) {
             throw new RuntimeException(e);
