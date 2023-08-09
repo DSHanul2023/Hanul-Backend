@@ -54,7 +54,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .httpBasic().disable()
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                     .and()
-                    .authorizeRequests().antMatchers("/", "/members/**", "/items/**").permitAll()
+                    .authorizeRequests().antMatchers("/", "/members/**", "/items/**", "/dialogFlowWebHook", "/chats/**").permitAll()
 //                    .antMatchers("/getMemberInfo").authenticated() // Add this line to secure /getMemberInfo
                     .anyRequest().authenticated();
         } catch (Exception e) {
