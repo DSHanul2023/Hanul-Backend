@@ -22,6 +22,9 @@ public class BoardEntity {
     private String idx;
 
     @Column(nullable = false)
+    private String type;
+
+    @Column(nullable = false)
     private String title;
 
     @Column(nullable = false)
@@ -35,4 +38,7 @@ public class BoardEntity {
 
     @Column(nullable = false)
     private String date;
+
+    @Column(nullable = false)
+    private String memberid;
 }
