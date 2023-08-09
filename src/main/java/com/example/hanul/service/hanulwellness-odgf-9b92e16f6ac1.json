@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "hanulwellness-odgf",
+  "private_key_id": "9b92e16f6ac12e126dac64a0e95a813118540688",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC6AUiCI5KS/EtR\naEojjD21yOsHfL1F2YwDTPOw/ScIqgGPf/hq53TLgBBykw9OPYH7O6cDRt0M1HFg\nNQvUp0vqLfVDC8P1LyLjuxola7GRFR8IoREiq/CqPnCR0yNvuVdHuQsPLt4/ej4x\nQH85tuVqUsPu7XItPFBvBJpmW2Y3G3f2Bb7PlsPXYZNJKP7DHWIhqvcYpDqlnxmI\nxqHrilSW8FlQN81Y4POGpmuGOgPshWwIfdGg7rUZPG7p/cZ4a9w8K2dAGFAxUkEm\nIscYAX97BMdHlyVI4J+NIBlemNQHG5FBfuUxDOet0POKQY7XZok2zzfrC7GDVl1D\nZM+v0J6tAgMBAAECggEABNu6Y42Uh55O74mgso5UvWmtYsQDGSQvEgfjaEC4Ckk6\nCacMe5V097rf6/4yAiXSdxfhx8KTMGULPmRH3UVnmfy3GF83aRS2UwamgGbT7ZtL\n2G/ax9W4+fXTjRuGeaWxb+rQSZSRz0xrNMWt1CRPCibLRR4g0Y01+CzPtyi1U+Dj\nSCGKO5mV/booOMNtYLl8I5b/dCL5YXh1O4JC1dGJcgYq8hdJdu0EWND2Nmmn4FPh\nUt8V47DXJ3VXBUrycd2qwGZB18io9NUZpYVFVvY7cUrIsUgnNTES3Uho4924sed7\n5eVAoh6Uam05pXQby2NyRJALlD8xaOgdvHEr141ugQKBgQDeCew3ULoDelsAxSuM\nrKzARYMDdwVmzGSelzyJuFw7niwuBcH0N1BZBpltZ9//ciWKiVyYzUYVOPZ3XPC9\n+N0oRBrbqkDMRwRYSVLR4Qa7K5nVblAgpAYkoQ/a/+bZk5O/4+lke9wL/VA41reU\nA6QX0LKCI/RxXpxmupcEUqW1nQKBgQDWdG9RWncVempZDLMuIpL/80huZL0TdUCF\n+2tNQy0k5uC88vzHBST34P9YiqWlzCIEtjQVrqj2o1krxDDMfUfjncif0Y3kM/mo\nIUULetct7pLk4LHsrj/vQOsP9629fXDQ/jr2FXQ1osO3veDMm5Mz4bpzIis+AGgD\nFGqVDSZIUQKBgHH39+Zgqkn0uNdJXVQkobtDMr9JjV05loAMssch+T2kr5qj2+0l\nozk++Ou+QKyWg4x7eyr3Wny0M1YLP4rTPXlYk8yitAXmgeVrJXaTIWhbNefmanyG\nlJyii0fmyDBv3ovFSVwJc2Y4DMBP/gScZdLPjYDdQbAbVv4n0jIm1eXFAoGBAMj0\nFDeUYNBEhJDrQJ+zkDG845tmVHJ+RbcG0BZ3Iz9YBTGpM8q+fFS2hi+OxAfnj90A\nazACGZv7lxxW3C9SGeIlQRDZSW+UcJXmjw9hzW7iBs3n63HQGmL0Xw/4U9qjR+re\nv5tGoT19Ro7Po223Pqm4FIG8e+6+bLiuEe2Xg87xAoGAQkXoMHi9nK7uPDRzkfTD\n3zguL0g84xSEEc9zeKpTWT22MMfFBGqGU30Q0KvEiIZ21bseJGKp282NvUdGZPw1\nEqiBGM114w1Q5Ew963MoSnar4px0Xw+ACcaWfyWKSadWoV2Cb3VfFe2X6p7rFXWK\nF0YWUD1+F6JegB1RblDfzMY=\n-----END PRIVATE KEY-----\n",
+  "client_email": "dshanul01@hanulwellness-odgf.iam.gserviceaccount.com",
+  "client_id": "110086508626716869711",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/dshanul01%40hanulwellness-odgf.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
