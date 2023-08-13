@@ -12,18 +12,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/chats")
 public class ChatController {
     private final ChatService chatService;
-    private final DialogflowService dialogflowService; // Dialogflow 서비스 추가
+    private final DialogflowService dialogflowService;
 
-    private static final Logger logger = LoggerFactory.getLogger(ChatController.class); // Logger 추가
-
+    private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
 
     @Autowired
     public ChatController(ChatService chatService, DialogflowService dialogflowService) {
@@ -37,25 +36,24 @@ public class ChatController {
     }
 
     @PostMapping("/chatdialogflow")
-    public ResponseEntity<String> handleChatMessage(@RequestBody ChatDTO chatDTO) {
+    public ResponseEntity<ChatEntity> handleChatMessage(@RequestBody ChatDTO chatDTO) {
         ChatEntity savedChat = chatService.saveChatMessage(chatDTO.getMemberId(), chatDTO.getMessage());
 
         if (savedChat != null) {
             try {
-                // Dialogflow에 사용자 입력 전달
                 String userMessage = chatDTO.getMessage();
                 String dialogflowResponse = dialogflowService.sendToDialogflow(userMessage);
 
-                // 로그로 출력
                 logger.info("[사용자 채팅 저장 및 응답] 입력: {} 응답: {}", userMessage, dialogflowResponse);
 
-                return ResponseEntity.status(HttpStatus.OK).body(dialogflowResponse); // 응답은 dialogflowResponse로만 설정
+                String botResponseContent = dialogflowResponse; // 수정: dialogflowResponse를 직접 사용
+                return ResponseEntity.status(HttpStatus.OK).body(new ChatEntity(null, botResponseContent, null, LocalDateTime.now()));
             } catch (IOException e) {
                 logger.error("Dialogflow 통신 실패", e);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to communicate with Dialogflow");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
         } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to save chat message");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
