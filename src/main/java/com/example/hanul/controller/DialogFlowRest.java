@@ -20,7 +20,6 @@ public class DialogFlowRest {
     public String main(){
         return "ngrok 연결 테스트";
     }
-
     @RequestMapping(method = RequestMethod.POST, value = "/dialogFlowWebHook")
     public ResponseEntity<?> dialogFlowWebHook(@RequestBody String requestStr, HttpServletRequest servletRequest) throws IOException {
 
