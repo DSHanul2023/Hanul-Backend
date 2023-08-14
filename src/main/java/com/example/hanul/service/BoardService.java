@@ -30,7 +30,20 @@ public class BoardService {
         return boardRepository.findAll();
     }
 
+    public List<BoardEntity> retrieveMyPost(final String memberId){
+        return boardRepository.findByMemberId(memberId);
+    }
+
     public List<BoardEntity> create(BoardEntity entity) {
+//        if (entity == null) {
+//            log.warn("Entity cannot be null.");
+//            throw new RuntimeException(("Entity cannot be null."));
+//        }
+//
+//        if(entity.getAuthor() == null) {
+//            log.warn("Unknown user.");
+//            throw new RuntimeException(("Unknown user."));
+//        }
         validate(entity);
 
         boardRepository.save(entity);
@@ -55,7 +68,8 @@ public class BoardService {
 
         return boardRepository.findAll();
     }
-    public List<BoardEntity> update(final BoardEntity entity) {
+
+    public List<BoardEntity> update(BoardEntity entity) {
         if(entity == null) {
             log.warn("Entity cannot be null.");
             throw new RuntimeException(("Entity cannot be null."));

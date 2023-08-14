@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface BoardRepository extends JpaRepository<BoardEntity, String> {
 
-//    BoardEntity findByIdx(String id);
+    BoardEntity findByIdx(String id);
     BoardEntity findByTitleContaining(String title);
 
     List<BoardEntity> findAll();
@@ -18,5 +18,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, String> {
 
 
     List<BoardEntity> findByIdxContainingIgnoreCase(String idx);
+
+    List<BoardEntity> findByMemberId(String memberId);
 
 }
