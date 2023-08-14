@@ -45,4 +45,5 @@ public class DialogflowService {
 
         return response.getQueryResult().getFulfillmentText();
     }
+
 }
