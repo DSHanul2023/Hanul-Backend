@@ -1,7 +1,6 @@
 package com.example.hanul.service;
 
 import com.example.hanul.dto.ItemDTO;
-import com.example.hanul.model.BoardEntity;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.ItemRepository;
@@ -127,28 +126,5 @@ public class ItemService {
             log.error("상품 저장 중 오류가 발생하였습니다.", e);
             return null;
         }
-    }
-
-    // item 북마크에 저장
-    public ItemEntity saveItemForMember(MemberEntity member, ItemDTO itemDTO) {
-        // 중복 등록을 체크하는 로직 추가
-        ItemEntity existingItem = itemRepository.findByItemNmAndMember(itemDTO.getItemNm(), member);
-        if (existingItem != null) {
-            return null; // 이미 등록된 아이템인 경우 null 반환
-        }
-
-        ItemEntity itemEntity = ItemEntity.builder()
-                .itemNm(itemDTO.getItemNm())
-                .itemDetail(itemDTO.getItemDetail())
-                .member(member)
-                .build();
-
-        return itemRepository.save(itemEntity);
-    }
-
-    // item 저장 시 북마크 중복 확인
-    public boolean checkIfItemAlreadySaved(MemberEntity member, ItemDTO itemDTO) {
-        ItemEntity existingItem = itemRepository.findByItemNmAndMember(itemDTO.getItemNm(), member);
-        return existingItem != null;
     }
 }

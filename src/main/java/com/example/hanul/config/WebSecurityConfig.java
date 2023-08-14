@@ -1,6 +1,5 @@
 package com.example.hanul.config;
 
-
 import com.example.hanul.security.JwtAuthenticationFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .httpBasic().disable()
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                     .and()
-                    .authorizeRequests().antMatchers("/", "/members/**").permitAll()
+                    .authorizeRequests().antMatchers("/", "/members/**", "/items/**", "/dialogFlowWebHook", "/chats/**").permitAll()
                     .anyRequest().authenticated();
         } catch (Exception e) {
             throw new RuntimeException(e);

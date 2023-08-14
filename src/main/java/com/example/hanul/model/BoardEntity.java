@@ -40,5 +40,5 @@ public class BoardEntity {
     private String date;
 
     @Column(nullable = false)
-    private String memberId;
+    private String memberid;
 }

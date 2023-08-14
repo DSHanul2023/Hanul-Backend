@@ -1,6 +1,5 @@
 package com.example.hanul.controller;
 
-import com.example.hanul.service.DialogflowService;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.dialogflow.v3.model.GoogleCloudDialogflowV2WebhookRequest;
 import com.google.api.services.dialogflow.v3.model.GoogleCloudDialogflowV2WebhookResponse;
@@ -15,12 +14,7 @@ import java.util.Map;
 @RestController
 public class DialogFlowRest {
 
-    private final DialogflowService dialogflowService;
     private static JacksonFactory jacksonFactory = JacksonFactory.getDefaultInstance();
-
-    public DialogFlowRest(DialogflowService dialogflowService) {
-        this.dialogflowService = dialogflowService;
-    }
 
     @GetMapping
     public String main(){
@@ -51,5 +45,4 @@ public class DialogFlowRest {
             return new ResponseEntity<Object>(ex.getMessage(),HttpStatus.BAD_REQUEST); // 에러 발생 시 bad request 보내줌
         }
     }
-
 }
