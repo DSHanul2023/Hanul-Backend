@@ -28,5 +28,7 @@ public class InquiryEntity {
     private String inquiryDetail;
     private boolean state;
     private String createdAt;
+    private String answer;
+    private String answer_date;
 }
 

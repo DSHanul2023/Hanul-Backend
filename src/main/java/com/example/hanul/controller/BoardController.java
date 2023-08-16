@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,16 +41,29 @@ public class BoardController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@AuthenticationPrincipal String userId, @RequestBody BoardDTO dto) {
+    public ResponseEntity<?> create(@AuthenticationPrincipal String userId,
+                                    @RequestParam("title") String title,
+                                    @RequestParam("contents") String contents,
+                                    @RequestParam("type") String type,
+                                    @RequestPart(value = "image", required = false)  MultipartFile image) {
         Optional<MemberEntity> member = memberRepository.findById(userId);
         if (member == null) {
             throw new RuntimeException("User not found.");
         }
         try {
-            BoardEntity entity = BoardDTO.toEntity(dto);
+            BoardEntity entity = new BoardEntity();
+            entity.setTitle(title);
+            entity.setContents(contents);
+            entity.setType(type);
             entity.setAuthor(member.get().getName());
             entity.setMemberId(member.get().getId());
             entity.setDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            if (image != null) {
+                if (!image.isEmpty()) {
+                    byte[] imageBytes = image.getBytes();
+                    entity.setImage(imageBytes);
+                }
+            }
             List<BoardEntity> entities = service.create(entity);
             List<BoardDTO> dtos = entities.stream().map(BoardDTO::new).collect(Collectors.toList());
             ResponseDTO<BoardDTO> response = ResponseDTO.<BoardDTO>builder().data(dtos).build();
@@ -67,6 +81,7 @@ public class BoardController {
     public ResponseEntity<?> delete(@AuthenticationPrincipal String userId, @RequestBody BoardDTO dto) {
         try {
             BoardEntity entity = BoardDTO.toEntity(dto);
+
             List<BoardEntity> entities = service.delete(entity);
             List<BoardDTO> dtos = entities.stream().map(BoardDTO::new).collect(Collectors.toList());
             ResponseDTO<BoardDTO> response = ResponseDTO.<BoardDTO>builder().data(dtos).build();
@@ -81,10 +96,23 @@ public class BoardController {
     }
 
     @PutMapping
-    public ResponseEntity<?> update(@AuthenticationPrincipal String userId, @RequestBody BoardDTO dto) {
+    public ResponseEntity<?> update(@AuthenticationPrincipal String userId,
+                                    @RequestParam("idx") String idx,
+                                    @RequestParam("title") String title,
+                                    @RequestParam("contents") String contents,
+                                    @RequestPart(value = "image", required = false)  MultipartFile image) {
         try {
-            BoardEntity entity = BoardDTO.toEntity(dto);
+            BoardEntity entity = new BoardEntity();
+            entity.setIdx(idx);
+            entity.setTitle(title);
+            entity.setContents(contents);
             entity.setDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            if (image != null) {
+                if (!image.isEmpty()) {
+                    byte[] imageBytes = image.getBytes();
+                    entity.setImage(imageBytes);
+                }
+            }
             List<BoardEntity> entities = service.update(entity);
             List<BoardDTO> dtos = entities.stream().map(BoardDTO::new).collect(Collectors.toList());
             ResponseDTO<BoardDTO> response = ResponseDTO.<BoardDTO>builder().data(dtos).build();
