@@ -11,34 +11,23 @@ import javax.persistence.*;
 @Entity
 @Builder
 @Data
-@Table(name = "Board")
+@Table(name = "Comment")
 @NoArgsConstructor
 @AllArgsConstructor
-public class BoardEntity {
+public class CommentEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name="system-uuid", strategy="uuid")
-    @Column(name = "board_idx")
-    private String idx;
-
+    @Column(name = "comment_id")
+    private String id;
     @Column(nullable = false)
-    private String type;
-
+    private String boardId;
     @Column(nullable = false)
-    private String title;
-
-    @Column(nullable = false)
-    private String contents;
-
-    @Lob
-    private byte[] image;
-
+    private String text;
     @Column(nullable = false)
     private String author;
-
-    @Column(nullable = false)
-    private String date;
-
     @Column(nullable = false)
     private String memberId;
+    @Column(nullable = false)
+    private String date;
 }
