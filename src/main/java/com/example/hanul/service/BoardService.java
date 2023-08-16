@@ -1,7 +1,6 @@
 package com.example.hanul.service;
 
 import com.example.hanul.model.BoardEntity;
-import com.example.hanul.model.InquiryEntity;
 import com.example.hanul.repository.BoardRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,15 +34,6 @@ public class BoardService {
     }
 
     public List<BoardEntity> create(BoardEntity entity) {
-//        if (entity == null) {
-//            log.warn("Entity cannot be null.");
-//            throw new RuntimeException(("Entity cannot be null."));
-//        }
-//
-//        if(entity.getAuthor() == null) {
-//            log.warn("Unknown user.");
-//            throw new RuntimeException(("Unknown user."));
-//        }
         validate(entity);
 
         boardRepository.save(entity);
@@ -73,12 +63,12 @@ public class BoardService {
         if(entity == null) {
             log.warn("Entity cannot be null.");
             throw new RuntimeException(("Entity cannot be null."));
-        }        final Optional<BoardEntity> original = boardRepository.findById(entity.getIdx());
+        }
+        final Optional<BoardEntity> original = boardRepository.findById(entity.getIdx());
         original.ifPresent(board -> {
-            //(3) 반환된 TodoEntity가 존재하면 값을 새 entity 값으로 덮어씌운다.
             board.setTitle(entity.getTitle());
             board.setContents(entity.getContents());
-            if(entity.getImage().isEmpty()){
+            if (entity.getImage() != null && entity.getImage().length > 0) {
                 board.setImage(entity.getImage());
             }
 
