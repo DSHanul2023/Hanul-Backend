@@ -48,7 +48,7 @@ public class BoardController {
         try {
             BoardEntity entity = BoardDTO.toEntity(dto);
             entity.setAuthor(member.get().getName());
-            entity.setMemberid(member.get().getId());
+            entity.setMemberId(member.get().getId());
             entity.setDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             List<BoardEntity> entities = service.create(entity);
             List<BoardDTO> dtos = entities.stream().map(BoardDTO::new).collect(Collectors.toList());
@@ -104,7 +104,7 @@ public class BoardController {
             List<BoardDTO> dtos = entities.stream().map(boardEntity -> {
                 BoardDTO dto = new BoardDTO(boardEntity);
                 // 현재 로그인된 사용자의 memberid와 글 작성자의 memberid가 일치하는지 확인
-                if (userId.equals(boardEntity.getMemberid())) {
+                if (userId.equals(boardEntity.getMemberId())) {
                     dto.setCanEdit(true);
                 }
                 return dto;
@@ -116,5 +116,13 @@ public class BoardController {
             ResponseDTO<BoardDTO> response = ResponseDTO.<BoardDTO>builder().error(error).build();
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    @GetMapping("/mypost")
+    public ResponseEntity<?> retrieveMyPost(@AuthenticationPrincipal String memberId){
+        List<BoardEntity> entities = service.retrieveMyPost(memberId);
+        List<BoardDTO> dtos = entities.stream().map(BoardDTO::new).collect(Collectors.toList());
+        ResponseDTO<BoardDTO> response = ResponseDTO.<BoardDTO>builder().data(dtos).build();
+        return ResponseEntity.ok().body(response);
     }
 }

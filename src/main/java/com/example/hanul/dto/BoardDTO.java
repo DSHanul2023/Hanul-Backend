@@ -17,7 +17,7 @@ public class BoardDTO {
     private String author;
     private String date;
     private String idx;
-    private String memberid;
+    private String memberId;
     private boolean canEdit;
 
     public void setCanEdit(boolean canEdit) {
@@ -31,7 +31,7 @@ public class BoardDTO {
         this.date = entity.getDate();
         this.image = entity.getImage();
         this.idx = entity.getIdx();
-        this.memberid=entity.getMemberid();
+        this.memberId=entity.getMemberId();
     }
 
     public static BoardEntity toEntity(final BoardDTO dto) {
@@ -43,7 +43,7 @@ public class BoardDTO {
                 .author(dto.getAuthor())
                 .image(dto.getImage())
                 .date(dto.getDate())
-                .memberid(dto.getMemberid())
+                .memberId(dto.getMemberId())
                 .build();
     }
 }
