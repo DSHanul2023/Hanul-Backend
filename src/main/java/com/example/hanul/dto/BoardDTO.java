@@ -13,7 +13,7 @@ public class BoardDTO {
     private String type;
     private String title;
     private String contents;
-    private String image;
+    private byte[] image;
     private String author;
     private String date;
     private String idx;
@@ -31,7 +31,7 @@ public class BoardDTO {
         this.date = entity.getDate();
         this.image = entity.getImage();
         this.idx = entity.getIdx();
-        this.memberId=entity.getMemberId();
+        this.memberId = entity.getMemberId();
     }
 
     public static BoardEntity toEntity(final BoardDTO dto) {

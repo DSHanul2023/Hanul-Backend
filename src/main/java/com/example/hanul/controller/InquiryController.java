@@ -71,8 +71,11 @@ public class InquiryController {
     @GetMapping("/{query}")
     public ResponseEntity<?> searchInquiries(@AuthenticationPrincipal String memberId, @PathVariable("query") String query) {
         try {
-            List<InquiryEntity> entities = service.searchInquiries(memberId, query);
-            List<InquiryDTO> dtos = entities.stream().map(InquiryDTO::new).collect(Collectors.toList());
+            List<InquiryEntity> entities = service.searchInquiries(query);
+            List<InquiryDTO> dtos = entities.stream().map(entity -> {
+                InquiryDTO dto = new InquiryDTO(entity);
+                return dto;
+            }).collect(Collectors.toList());
             ResponseDTO<InquiryDTO> response = ResponseDTO.<InquiryDTO>builder().data(dtos).build();
             return ResponseEntity.ok().body(response);
         } catch (Exception e) {
