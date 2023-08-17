@@ -49,7 +49,8 @@ public class InquiryService {
             inquiry.setInquiryNm(entity.getInquiryNm());
             inquiry.setInquiryDetail(entity.getInquiryDetail());
             inquiry.setState(entity.isState());
-
+            inquiry.setAnswer(entity.getAnswer());
+            inquiry.setAnswer_date(entity.getAnswer_date());
             //(4)데이터베이스에 새 값을 저장한다.
             repository.save(inquiry);
         });
@@ -71,7 +72,10 @@ public class InquiryService {
         //(5)새 Todo리스트를 가져와 리턴
         return retrieve(entity.getMemberId());
     }
-    public List<InquiryEntity> searchInquiries(String memberId, String query) {
-        return repository.findByMemberIdAndInquiryNmContainingIgnoreCase(memberId, query);
+    public List<InquiryEntity> searchInquiries( String query) {
+        return repository.findByInquiryNmContainingIgnoreCase(query);
+    }
+    public List<InquiryEntity> getInquiries( String query) {
+        return repository.findByIdContainingIgnoreCase(query);
     }
 }

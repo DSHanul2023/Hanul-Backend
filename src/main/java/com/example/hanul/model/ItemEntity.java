@@ -31,6 +31,6 @@ public class ItemEntity {
     private String posterUrl; // 영화 포스터 이미지 URL
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", nullable = true)
     private MemberEntity member;
 }
