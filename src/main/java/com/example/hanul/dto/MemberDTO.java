@@ -12,6 +12,8 @@ public class MemberDTO {
     private String name;
     private String email;
     private String password;
+    private String newPassword;
+    private String token;
 
     public MemberDTO(String email, String password) {
         this.email = email;
