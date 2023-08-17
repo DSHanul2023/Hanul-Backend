@@ -48,7 +48,7 @@ public class ChatController {
                 String botResponseContent;
 
                 if ("listen.support".equals(action)) {
-                    botResponseContent = "action: "+action+", "+handleFlask(userMessage); // 플라스크 응답 사용
+                    botResponseContent = handleFlask(userMessage); // 플라스크 응답 사용
                 } else {
                     botResponseContent = dialogflowResponse;
                 }
