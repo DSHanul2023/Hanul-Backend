@@ -30,9 +30,6 @@ public class ItemEntity {
     @Column(nullable = true)
     private String posterUrl; // 영화 포스터 이미지 URL
 
-    @Column(nullable = true)
-    private String itemGenre; // 아이템 장르 정보
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = true)
     private MemberEntity member;
