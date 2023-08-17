@@ -11,4 +11,13 @@ public class ItemDTO {
     private String itemNm;
     private String itemDetail;
     private String posterUrl;
+    private String itemGenre;
+
+    public String getItemGenre() {
+        return itemGenre;
+    }
+
+    public void setItemGenre(String itemGenre) {
+        this.itemGenre = itemGenre;
+    }
 }
