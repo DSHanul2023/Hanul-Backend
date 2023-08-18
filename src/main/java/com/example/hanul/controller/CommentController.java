@@ -4,10 +4,13 @@ package com.example.hanul.controller;
 import com.example.hanul.dto.BoardDTO;
 import com.example.hanul.dto.CommentDTO;
 import com.example.hanul.dto.ResponseDTO;
+import com.example.hanul.model.BoardEntity;
 import com.example.hanul.model.CommentEntity;
 import com.example.hanul.model.MemberEntity;
+import com.example.hanul.repository.BoardRepository;
 import com.example.hanul.repository.CommentRepository;
 import com.example.hanul.repository.MemberRepository;
+import com.example.hanul.service.BoardService;
 import com.example.hanul.service.CommentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +20,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -29,7 +34,11 @@ public class CommentController {
     @Autowired
     private MemberRepository memberRepository;
     @Autowired
+    private BoardRepository boardRepository;
+    @Autowired
     private CommentService service;
+//    @Autowired
+//    private BoardService boardService;
     @Autowired
     public CommentController(CommentRepository commentRepository) {
         this.commentRepository = commentRepository;
@@ -118,5 +127,34 @@ public class CommentController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    @GetMapping("/mycomment")
+    public ResponseEntity<?> getPostFromMyComment(@AuthenticationPrincipal String userId) {
+        try {
+            List<CommentEntity> comments = commentRepository.findByMemberId(userId);
+            Set<String> uniqueBoardIds = comments.stream()
+                    .map(CommentEntity::getBoardId)
+                    .collect(Collectors.toSet());
+
+            List<BoardEntity> uniqueBoards = new ArrayList<>();
+            for (String boardId : uniqueBoardIds) {
+                BoardEntity board = boardRepository.findByIdx(boardId);
+                if (board != null) {
+                    uniqueBoards.add(board);
+                }
+            }
+
+            List<BoardDTO> boardDTOs = uniqueBoards.stream().map(BoardDTO::new).collect(Collectors.toList());
+
+            ResponseDTO<BoardDTO> response = ResponseDTO.<BoardDTO>builder().data(boardDTOs).build();
+            return ResponseEntity.ok().body(response);
+        } catch (Exception e) {
+            String error = e.getMessage();
+            ResponseDTO<BoardDTO> response = ResponseDTO.<BoardDTO>builder().error(error).build();
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+
 }
 

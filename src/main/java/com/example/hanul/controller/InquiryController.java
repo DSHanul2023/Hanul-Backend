@@ -69,6 +69,22 @@ public class InquiryController {
         }
     }
     @GetMapping("/{query}")
+    public ResponseEntity<?> getInquiries(@AuthenticationPrincipal String memberId, @PathVariable("query") String query) {
+        try {
+            List<InquiryEntity> entities = service.getInquiries(query);
+            List<InquiryDTO> dtos = entities.stream().map(entity -> {
+                InquiryDTO dto = new InquiryDTO(entity);
+                return dto;
+            }).collect(Collectors.toList());
+            ResponseDTO<InquiryDTO> response = ResponseDTO.<InquiryDTO>builder().data(dtos).build();
+            return ResponseEntity.ok().body(response);
+        } catch (Exception e) {
+            String error = e.getMessage();
+            ResponseDTO<InquiryDTO> response = ResponseDTO.<InquiryDTO>builder().error(error).build();
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    @GetMapping("/search/{query}")
     public ResponseEntity<?> searchInquiries(@AuthenticationPrincipal String memberId, @PathVariable("query") String query) {
         try {
             List<InquiryEntity> entities = service.searchInquiries(query);
