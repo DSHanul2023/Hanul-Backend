@@ -1,8 +1,10 @@
 package com.example.hanul;
 
+import com.example.hanul.dto.GenreDTO;
 import com.example.hanul.dto.ItemDTO;
 import com.example.hanul.dto.TMDBMovieDTO;
 import com.example.hanul.model.ItemEntity;
+import com.example.hanul.response.GenreListResponse;
 import com.example.hanul.response.TMDBMovieListResponse;
 import com.example.hanul.service.ItemService;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -65,6 +68,33 @@ public class DataInitializer implements CommandLineRunner {
                         itemDTO.setItemNm(movie.getTitle());
                         itemDTO.setItemDetail(movie.getOverview());
 
+                        // Fetch genre details for each genre ID
+                        List<String> genreNames = new ArrayList<>();
+                        for (Integer genreId : movie.getGenreIds()) {
+                            // Construct the URL to fetch genre details using the genre ID
+                            String genreUrl = "https://api.themoviedb.org/3/genre/movie/list?api_key=" + apiKey + "&language=ko";
+
+                            // Make the API call to get genre details
+                            Mono<GenreListResponse> genreResponseMono = webClient.get()
+                                    .uri(genreUrl)
+                                    .retrieve()
+                                    .bodyToMono(GenreListResponse.class);
+
+                            // Block and get the genre response
+                            GenreListResponse genreListResponse = genreResponseMono.block();
+
+                            // Find the genre name for the given genre ID
+                            if (genreListResponse != null) {
+                                for (GenreDTO genre : genreListResponse.getGenres()) {
+                                    if (genre.getGenreId() == genreId) {
+                                        genreNames.add(genre.getGenreName());
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        itemDTO.setGenreName(String.join(", ", genreNames));
+
                         // 포스터 URL을 기본 URL과 poster_path를 이용하여 구성
                         String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
                         itemDTO.setPosterUrl(posterUrl);
@@ -74,6 +104,7 @@ public class DataInitializer implements CommandLineRunner {
                                 .itemNm(itemDTO.getItemNm())
                                 .itemDetail(itemDTO.getItemDetail())
                                 .posterUrl(itemDTO.getPosterUrl()) // 포스터 URL 설정
+                                .genreName(itemDTO.getGenreName())
                                 .build();
 
                         itemService.saveItemWithPoster(itemEntity);
