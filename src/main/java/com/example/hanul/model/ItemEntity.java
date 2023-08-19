@@ -33,4 +33,8 @@ public class ItemEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = true)
     private MemberEntity member;
+
+    @Column(nullable = true)
+    private String genreName;
+
 }
