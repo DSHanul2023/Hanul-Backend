@@ -166,7 +166,7 @@ public class ItemController {
 
             while (currentPage <= 500) {
                 // TMDB API에서 한국어 영화 목록 가져오기 (페이지별로 데이터 요청, language 파라미터 추가)
-                String url = "https://api.themoviedb.org/3/movie/popular?api_key=" + apiKey + "&page=" + currentPage + "&language=ko-KR";
+                String url = "https://api.themoviedb.org/3/movie/popular?include_adult=false&api_key=" + apiKey + "&page=" + currentPage + "&language=ko-KR";
                 Mono<TMDBMovieListResponse> responseMono = webClient.get()
                         .uri(url)
                         .retrieve()
@@ -188,6 +188,12 @@ public class ItemController {
                         for (TMDBMovieDTO movie : movies) {
                             if (existingMovies.contains(movie.getTitle())) {
                                 log.info("이미 등록된 영화: " + movie.getTitle());
+                                continue;
+                            }
+
+                            // 성인 영화일 경우
+                            if(movie.isAdult()==true) {
+                                log.info("성인 영화: " + movie.getTitle());
                                 continue;
                             }
 

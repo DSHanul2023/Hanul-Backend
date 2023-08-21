@@ -102,6 +102,7 @@ public class DataInitializer implements CommandLineRunner {
                         // ItemEntity를 생성하고 포스터 URL을 설정한 후 아이템으로 등록합니다.
                         ItemEntity itemEntity = ItemEntity.builder()
                                 .itemNm(itemDTO.getItemNm())
+                                .adult(itemDTO.isAdult())
                                 .itemDetail(itemDTO.getItemDetail())
                                 .posterUrl(itemDTO.getPosterUrl()) // 포스터 URL 설정
                                 .genreName(itemDTO.getGenreName())
