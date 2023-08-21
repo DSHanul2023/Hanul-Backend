@@ -118,6 +118,7 @@ public class ItemService {
         ItemEntity itemEntity = ItemEntity.builder()
                 .itemNm(itemDTO.getItemNm())
                 .itemDetail(itemDTO.getItemDetail())
+                .genreName(itemDTO.getGenreName())
                 .build();
 
         try {
@@ -139,6 +140,7 @@ public class ItemService {
         ItemEntity itemEntity = ItemEntity.builder()
                 .itemNm(itemDTO.getItemNm())
                 .itemDetail(itemDTO.getItemDetail())
+                .genreName(itemDTO.getGenreName())
                 .member(member)
                 .build();
 
