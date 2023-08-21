@@ -11,4 +11,5 @@ public class ItemDTO {
     private String itemNm;
     private String itemDetail;
     private String posterUrl;
+    private String genreName;
 }
