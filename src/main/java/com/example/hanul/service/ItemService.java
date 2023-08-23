@@ -119,6 +119,7 @@ public class ItemService {
                 .itemNm(itemDTO.getItemNm())
                 .itemDetail(itemDTO.getItemDetail())
                 .genreName(itemDTO.getGenreName())
+                .movieId(itemDTO.getMovieId())
                 .build();
 
         try {
@@ -141,6 +142,7 @@ public class ItemService {
                 .itemNm(itemDTO.getItemNm())
                 .itemDetail(itemDTO.getItemDetail())
                 .genreName(itemDTO.getGenreName())
+                .movieId(itemDTO.getMovieId())
                 .member(member)
                 .build();
 
