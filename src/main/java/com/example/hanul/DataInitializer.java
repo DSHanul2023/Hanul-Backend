@@ -67,22 +67,23 @@ public class DataInitializer implements CommandLineRunner {
                 if (movieListResponse != null) {
                     List<TMDBMovieDTO> movies = movieListResponse.getResults();
                     for (TMDBMovieDTO movie : movies) {
-                        // 키워드로 성인영화 저장 안 하기 : 190370 - erotic movie, 596 - adultery
+                        // 키워드로 성인영화 저장 안 하기
                         String keywordUrl = "https://api.themoviedb.org/3/movie/" + movie.getMovieId() + "/keywords?api_key=" + apiKey;
-                        List<String> keywordNames = Arrays.asList("erotic movie", "adultery");
+                        List<String> keywordNames = Arrays.asList("erotic movie", "adultery", "softcore");
                         boolean adultMovie = false;
 
-                        // Make the API call to get genre details
                         Mono<KeywordListResponse> keywordResponseMono = webClient.get()
                                 .uri(keywordUrl)
                                 .retrieve()
                                 .bodyToMono(KeywordListResponse.class);
 
-                        // Block and get the genre response
                         KeywordListResponse keywordListResponse = keywordResponseMono.block();
 
-                        // Find the genre name for the given genre ID
-                        if (keywordListResponse != null) {
+                        if(keywordListResponse.getKeywords() == null || keywordListResponse.getKeywords().size() == 0){ // 키워드 없는 것도 제외
+                            adultMovie = true;
+                            continue;
+                        }
+                        else if (keywordListResponse != null) {
                             for (KeywordDTO keyword : keywordListResponse.getKeywords()) {
                                 for(String keywordName : keywordNames){
                                     if(keyword.getKeywordName().equals(keywordName)){
