@@ -14,6 +14,7 @@ public class MemberDTO {
     private String password;
     private String newPassword;
     private String token;
+    private String profilePictureName;
 
     public MemberDTO(String email, String password) {
         this.email = email;
