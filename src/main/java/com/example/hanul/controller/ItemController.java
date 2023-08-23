@@ -1,9 +1,6 @@
 package com.example.hanul.controller;
 
-import com.example.hanul.dto.GenreDTO;
-import com.example.hanul.dto.ItemDTO;
-import com.example.hanul.dto.KeywordDTO;
-import com.example.hanul.dto.TMDBMovieDTO;
+import com.example.hanul.dto.*;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.ItemRepository;
@@ -36,6 +33,9 @@ public class ItemController {
     private final ItemService itemService;
     private final MemberService memberService;
     private final WebClient webClient;
+
+    @Value("${tmdb.api.key}")
+    private String apiKey;
 
     @Autowired
     public ItemController(ItemService itemService, MemberService memberService, WebClient.Builder webClientBuilder) {
@@ -141,6 +141,44 @@ public class ItemController {
         }
     }
 
+    @DeleteMapping("/deleteAdultItem")
+    public ResponseEntity<String> deleteAdultItem(){
+        for(ItemEntity item : itemService.getAllItems()){
+            // 이미 등록된 영화 중 성인영화가 존재하면 삭제
+            String keywordUrl = "https://api.themoviedb.org/3/movie/" + item.getMovieId() + "/keywords?api_key=" + apiKey;
+            List<String> keywordNames = Arrays.asList("erotic movie", "adultery", "softcore");
+            boolean adultMovie = false;
+
+            Mono<KeywordListResponse> keywordResponseMono = webClient.get()
+                    .uri(keywordUrl)
+                    .retrieve()
+                    .bodyToMono(KeywordListResponse.class);
+
+            KeywordListResponse keywordListResponse = keywordResponseMono.block();
+
+            if(keywordListResponse.getKeywords() == null || keywordListResponse.getKeywords().size() == 0){ // 키워드 없는 것도 제외
+                adultMovie = true;
+                itemService.deleteAdultMovie(item.getMovieId());
+            }
+            else if (keywordListResponse != null) {
+                for (KeywordDTO keyword : keywordListResponse.getKeywords()) {
+                    for(String keywordName : keywordNames){
+                        if(keyword.getKeywordName().equals(keywordName)){
+                            adultMovie = true;
+                            break;
+                        }
+                    }
+                    if(adultMovie == true) break;
+                }
+                if(adultMovie == true) {
+                    itemService.deleteAdultMovie(item.getMovieId());
+                }
+            }
+        }
+        return ResponseEntity.ok("AdultItem deleted successfully");
+    }
+
+
     // 데이터 초기화를 위해 사용되는 클래스
     @Component
     @Slf4j
@@ -195,22 +233,23 @@ public class ItemController {
                                 continue;
                             }
 
-                            // 키워드로 성인영화 저장 안 하기 : 190370 - erotic movie, 596 - adultery
+                            // 키워드로 성인영화 저장 안 하기
                             String keywordUrl = "https://api.themoviedb.org/3/movie/" + movie.getMovieId() + "/keywords?api_key=" + apiKey;
-                            List<String> keywordNames = Arrays.asList("erotic movie", "adultery");
+                            List<String> keywordNames = Arrays.asList("erotic movie", "adultery", "softcore");
                             boolean adultMovie = false;
 
-                            // Make the API call to get genre details
                             Mono<KeywordListResponse> keywordResponseMono = webClient.get()
                                     .uri(keywordUrl)
                                     .retrieve()
                                     .bodyToMono(KeywordListResponse.class);
 
-                            // Block and get the genre response
                             KeywordListResponse keywordListResponse = keywordResponseMono.block();
 
-                            // Find the genre name for the given genre ID
-                            if (keywordListResponse != null) {
+                            if(keywordListResponse.getKeywords() == null || keywordListResponse.getKeywords().size() == 0){ // 키워드 없는 것도 제외
+                                adultMovie = true;
+                                continue;
+                            }
+                            else if (keywordListResponse != null) {
                                 for (KeywordDTO keyword : keywordListResponse.getKeywords()) {
                                     for(String keywordName : keywordNames){
                                         if(keyword.getKeywordName().equals(keywordName)){
