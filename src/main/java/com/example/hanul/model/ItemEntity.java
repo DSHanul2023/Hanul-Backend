@@ -37,4 +37,7 @@ public class ItemEntity {
     @Column(nullable = true)
     private String genreName;
 
+    @Column(nullable=false)
+    private String movieId;
+
 }
