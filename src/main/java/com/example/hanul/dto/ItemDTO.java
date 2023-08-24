@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ItemDTO {
     private String itemNm;
-    private boolean adult;
     private String itemDetail;
     private String posterUrl;
     private String genreName;
