@@ -30,7 +30,7 @@ public class MemberEntity {
     private String password;
 
     @Column
-    private String profilePictureUrl; // 프로필 사진 URL을 저장하는 필드
+    private String profilePictureName; // 프로필 사진 URL을 저장하는 필드
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemEntity> items;

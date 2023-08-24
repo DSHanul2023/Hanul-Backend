@@ -13,6 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.Key;
 import java.util.Date;
 import java.util.Optional;
@@ -20,7 +24,9 @@ import java.util.Optional;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -97,6 +103,7 @@ public class MemberService {
             memberDTO.setName(authenticatedMember.getName());
             memberDTO.setEmail(authenticatedMember.getEmail());
             memberDTO.setToken(generateJwtToken(memberId, email, secret));
+            memberDTO.setProfilePictureName(authenticatedMember.getProfilePictureName());
             return memberDTO;
         }
         return null;
@@ -112,6 +119,7 @@ public class MemberService {
             memberDTO.setName(authenticatedMember.getName());
             memberDTO.setEmail(authenticatedMember.getEmail());
             memberDTO.setToken(generateJwtToken(memberId, email, secret));
+            memberDTO.setProfilePictureName(authenticatedMember.getProfilePictureName());
             return memberDTO;
         }
         return null;
@@ -146,6 +154,7 @@ public class MemberService {
             memberDTO.setId(memberId);
             memberDTO.setName(memberEntity.getName());
             memberDTO.setEmail(memberEntity.getEmail());
+            memberDTO.setProfilePictureName(memberEntity.getProfilePictureName());
             return memberDTO;
         }
 
@@ -198,5 +207,30 @@ public class MemberService {
             return true;
         }
         return false;
+    }
+
+    @Value("${app.upload-dir}") // Inject the app.upload-dir property
+    private String uploadDir;
+
+    public void updateProfilePicture(String memberId, MultipartFile file) {
+        MemberEntity member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("Could not find member"));
+        try {
+            String fileName = "profile_picture_" + memberId + ".jpg";
+            Path filePath = Paths.get(uploadDir, fileName);
+
+            // 대상 경로 생성
+            String destinationPath = uploadDir + "/" + fileName;
+            Path destination = Paths.get(destinationPath);
+
+            // 업로드된 파일을 대상으로 복사
+            Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
+
+            // Update the member's profile picture path
+            member.setProfilePictureName(fileName);
+            memberRepository.save(member);
+        } catch (Exception e) {
+            throw new RuntimeException("An error occurred while updating your profile picture.", e);
+        }
     }
 }
