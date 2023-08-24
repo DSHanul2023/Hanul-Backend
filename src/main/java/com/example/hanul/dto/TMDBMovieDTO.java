@@ -27,4 +27,7 @@ public class TMDBMovieDTO {
     @JsonProperty("genre_ids") // genre Id 리스트
     private List<Integer> genreIds;
 
+    @JsonProperty("id") // tmdb의 movieId
+    private String movieId;
+
 }
