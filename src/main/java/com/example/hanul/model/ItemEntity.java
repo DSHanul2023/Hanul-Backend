@@ -24,9 +24,6 @@ public class ItemEntity {
     @Column(nullable = true)
     private String itemNm;
 
-    @Column(nullable = true)
-    private boolean adult;
-
     @Column(nullable = true, length = 2000) // 길이를 2000으로 변경
     private String itemDetail;
 
