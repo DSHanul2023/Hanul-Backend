@@ -18,10 +18,16 @@ public class TMDBMovieDTO {
     @JsonProperty("overview")
     private String overview;
 
+    @JsonProperty("adult")
+    private boolean adult;
+
     @JsonProperty("poster_path")
     private String posterPath; // 영화 포스터 이미지 경로
 
     @JsonProperty("genre_ids") // genre Id 리스트
     private List<Integer> genreIds;
+
+    @JsonProperty("id") // tmdb의 movieId
+    private String movieId;
 
 }
