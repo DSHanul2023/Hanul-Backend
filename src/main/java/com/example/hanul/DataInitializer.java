@@ -1,12 +1,10 @@
 package com.example.hanul;
 
-import com.example.hanul.dto.GenreDTO;
-import com.example.hanul.dto.ItemDTO;
-import com.example.hanul.dto.KeywordDTO;
-import com.example.hanul.dto.TMDBMovieDTO;
+import com.example.hanul.dto.*;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.response.GenreListResponse;
 import com.example.hanul.response.KeywordListResponse;
+import com.example.hanul.response.ReleaseDateListResponse;
 import com.example.hanul.response.TMDBMovieListResponse;
 import com.example.hanul.service.ItemService;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -68,30 +66,30 @@ public class DataInitializer implements CommandLineRunner {
                     List<TMDBMovieDTO> movies = movieListResponse.getResults();
                     for (TMDBMovieDTO movie : movies) {
                         // 키워드로 성인영화 저장 안 하기
-                        String keywordUrl = "https://api.themoviedb.org/3/movie/" + movie.getMovieId() + "/keywords?api_key=" + apiKey;
-                        List<String> keywordNames = Arrays.asList("erotic movie", "adultery", "softcore");
+                        String releaseDatesUrl = "https://api.themoviedb.org/3/movie/" + movie.getMovieId() + "/release_dates?api_key=" + apiKey;
                         boolean adultMovie = false;
 
-                        Mono<KeywordListResponse> keywordResponseMono = webClient.get()
-                                .uri(keywordUrl)
+                        Mono<ReleaseDateListResponse> releaseDateResponseMono = webClient.get()
+                                .uri(releaseDatesUrl)
                                 .retrieve()
-                                .bodyToMono(KeywordListResponse.class);
+                                .bodyToMono(ReleaseDateListResponse.class);
 
-                        KeywordListResponse keywordListResponse = keywordResponseMono.block();
+                        ReleaseDateListResponse releaseDateListResponse = releaseDateResponseMono.block();
 
-                        if(keywordListResponse.getKeywords() == null || keywordListResponse.getKeywords().size() == 0){ // 키워드 없는 것도 제외
-                            adultMovie = true;
-                            continue;
-                        }
-                        else if (keywordListResponse != null) {
-                            for (KeywordDTO keyword : keywordListResponse.getKeywords()) {
-                                for(String keywordName : keywordNames){
-                                    if(keyword.getKeywordName().equals(keywordName)){
-                                        adultMovie = true;
-                                        break;
+                        if (releaseDateListResponse != null) {
+                            for (ReleaseDateDTO releaseDate : releaseDateListResponse.getResults()) {
+                                if ("KR".equals(releaseDate.getRegion())) {
+                                    for (ReleaseInfoDTO releaseInfo : releaseDate.getRelease_dates()) {
+                                        String certification = releaseInfo.getCertification();
+                                        // 여기에서 certification 값을 사용할 수 있습니다.
+                                        if ("18".equals(certification) || "Restricted Screening".equals(certification) || "19+".equals(certification)) {
+                                            adultMovie = true;
+                                            log.info(movie.getTitle() + ": 시청등급 " + certification);
+                                            break;
+                                        }
                                     }
+                                    break;
                                 }
-                                if(adultMovie == true) break;
                             }
                         }
 
