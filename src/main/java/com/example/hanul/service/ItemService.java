@@ -165,4 +165,8 @@ public class ItemService {
         }
         return false;
     }
+
+    public ItemEntity getItemByMovieId(String movieId) {
+        return itemRepository.findByMovieId(movieId).orElse(null);
+    }
 }
