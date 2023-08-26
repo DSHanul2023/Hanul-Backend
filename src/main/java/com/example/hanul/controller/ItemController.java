@@ -4,10 +4,7 @@ import com.example.hanul.dto.*;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.ItemRepository;
-import com.example.hanul.response.GenreListResponse;
-import com.example.hanul.response.KeywordListResponse;
-import com.example.hanul.response.ReleaseDateListResponse;
-import com.example.hanul.response.TMDBMovieListResponse;
+import com.example.hanul.response.*;
 import com.example.hanul.service.ItemService;
 import com.example.hanul.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
@@ -186,4 +183,12 @@ public class ItemController {
         }
         return ResponseEntity.ok("총 " + count +"개의 성인영화가 삭제되었습니다.");
     }
+
+    @GetMapping("/provider/{movieId}")
+    public ResponseEntity<ProviderDTO> getProviders(@PathVariable String movieId){
+        ProviderDTO krProvider;
+        krProvider = itemService.getProviders(movieId);
+        return ResponseEntity.status(HttpStatus.OK).body(krProvider);
+    }
+
 }
