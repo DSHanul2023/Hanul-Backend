@@ -4,6 +4,7 @@ import com.example.hanul.dto.ChatDTO;
 import com.example.hanul.model.ChatEntity;
 import com.example.hanul.service.ChatService;
 import com.example.hanul.service.DialogflowService;
+import com.google.cloud.dialogflow.v2.DetectIntentResponse;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -35,23 +36,41 @@ public class ChatController {
 
     @PostMapping("/chatdialogflow")
     public ResponseEntity<ChatEntity> handleChatMessage(@RequestBody ChatDTO chatDTO) {
+        long startTime = System.currentTimeMillis(); // 시작 시간 기록
+
         ChatEntity savedChat = chatService.saveChatMessage(chatDTO.getMemberId(), chatDTO.getMessage());
+
+        long dbSaveEndTime = System.currentTimeMillis(); // DB 저장 종료 시간 기록
 
         if (savedChat != null) {
             try {
+                long dialogflowStartTime = System.currentTimeMillis(); // Dialogflow 통신 시작 시간 기록
                 String userMessage = chatDTO.getMessage();
-                String dialogflowResponse = dialogflowService.sendToDialogflow(userMessage);
-                String action = dialogflowService.getActionFromResponse(userMessage);
+                DetectIntentResponse dialogflowResponse = dialogflowService.sendToDialogflow(userMessage);
+                String fullfillmentText = dialogflowResponse.getQueryResult().getFulfillmentText();
+                String action = dialogflowResponse.getQueryResult().getAction();
+
+                long dialogflowEndTime = System.currentTimeMillis(); // Dialogflow 통신 종료 시간 기록
 
                 logger.info("[사용자 채팅 저장 및 응답] 입력: {} 응답: {} 액션: {}", userMessage, dialogflowResponse, action);
 
                 String botResponseContent;
 
                 if ("listen.support".equals(action)) {
+                    long flaskStartTime = System.currentTimeMillis(); // Flask 요청 시작 시간 기록
                     botResponseContent = handleFlask(userMessage); // 플라스크 응답 사용
+                    long flaskEndTime = System.currentTimeMillis(); // Flask 요청 종료 시간 기록
+
+                    logger.info("Flask 요청 시간: {}ms", (flaskEndTime - flaskStartTime));
                 } else {
-                    botResponseContent = dialogflowResponse;
+                    botResponseContent = fullfillmentText;
                 }
+
+                long processingEndTime = System.currentTimeMillis(); // 처리 종료 시간 기록
+
+                logger.info("DB 저장 시간: {}ms", (dbSaveEndTime - startTime));
+                logger.info("Dialogflow 통신 시간: {}ms", (dialogflowEndTime - dialogflowStartTime));
+                logger.info("처리 시간: {}ms", (processingEndTime - startTime));
 
                 return ResponseEntity.status(HttpStatus.OK).body(new ChatEntity(null, botResponseContent, null, LocalDateTime.now()));
             } catch (IOException e) {
