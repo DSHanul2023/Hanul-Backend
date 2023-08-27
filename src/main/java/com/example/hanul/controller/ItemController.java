@@ -4,9 +4,7 @@ import com.example.hanul.dto.*;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.ItemRepository;
-import com.example.hanul.response.GenreListResponse;
-import com.example.hanul.response.KeywordListResponse;
-import com.example.hanul.response.TMDBMovieListResponse;
+import com.example.hanul.response.*;
 import com.example.hanul.service.ItemService;
 import com.example.hanul.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
@@ -65,6 +63,17 @@ public class ItemController {
     @GetMapping("/{itemId}")
     public ResponseEntity<Object> getItemDetails(@PathVariable String itemId) {
         ItemEntity item = itemService.getItemById(itemId);
+        if (item != null) {
+            return ResponseEntity.ok(item);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("상품을 찾을 수 없습니다.");
+        }
+    }
+
+    // 주어진 영화 ID에 해당하는 상품의 세부 정보를 가져옴
+    @GetMapping("/movieId/{movieId}")
+    public ResponseEntity<Object> getItemDetailsByMovieId(@PathVariable String movieId) {
+        ItemEntity item = itemService.getItemByMovieId(movieId);
         if (item != null) {
             return ResponseEntity.ok(item);
         } else {
@@ -142,195 +151,44 @@ public class ItemController {
     }
 
     @DeleteMapping("/deleteAdultItem")
-    public ResponseEntity<String> deleteAdultItem(){
-        for(ItemEntity item : itemService.getAllItems()){
+    public ResponseEntity<String> deleteAdultItem() {
+        int count=0;
+        for (ItemEntity item : itemService.getAllItems()) {
             // 이미 등록된 영화 중 성인영화가 존재하면 삭제
-            String keywordUrl = "https://api.themoviedb.org/3/movie/" + item.getMovieId() + "/keywords?api_key=" + apiKey;
-            List<String> keywordNames = Arrays.asList("erotic movie", "adultery", "softcore");
-            boolean adultMovie = false;
+            String releaseDatesUrl = "https://api.themoviedb.org/3/movie/" + item.getMovieId() + "/release_dates?api_key=" + apiKey;
 
-            Mono<KeywordListResponse> keywordResponseMono = webClient.get()
-                    .uri(keywordUrl)
+            Mono<ReleaseDateListResponse> releaseDateResponseMono = webClient.get()
+                    .uri(releaseDatesUrl)
                     .retrieve()
-                    .bodyToMono(KeywordListResponse.class);
+                    .bodyToMono(ReleaseDateListResponse.class);
 
-            KeywordListResponse keywordListResponse = keywordResponseMono.block();
+            ReleaseDateListResponse releaseDateListResponse = releaseDateResponseMono.block();
 
-            if(keywordListResponse.getKeywords() == null || keywordListResponse.getKeywords().size() == 0){ // 키워드 없는 것도 제외
-                adultMovie = true;
-                itemService.deleteAdultMovie(item.getMovieId());
-            }
-            else if (keywordListResponse != null) {
-                for (KeywordDTO keyword : keywordListResponse.getKeywords()) {
-                    for(String keywordName : keywordNames){
-                        if(keyword.getKeywordName().equals(keywordName)){
-                            adultMovie = true;
-                            break;
+            if (releaseDateListResponse != null) {
+                for (ReleaseDateDTO releaseDate : releaseDateListResponse.getResults()) {
+                    if ("KR".equals(releaseDate.getRegion())) {
+                        for (ReleaseInfoDTO releaseInfo : releaseDate.getRelease_dates()) {
+                            String certification = releaseInfo.getCertification();
+                            // 여기에서 certification 값을 사용할 수 있습니다.
+                            if ("18".equals(certification) || "Restricted Screening".equals(certification) || "19+".equals(certification)) {
+                                itemService.deleteAdultMovie(item.getMovieId());
+                                count++;
+                                break;
+                            }
                         }
-                    }
-                    if(adultMovie == true) break;
-                }
-                if(adultMovie == true) {
-                    itemService.deleteAdultMovie(item.getMovieId());
-                }
-            }
-        }
-        return ResponseEntity.ok("AdultItem deleted successfully");
-    }
-
-
-    // 데이터 초기화를 위해 사용되는 클래스
-    @Component
-    @Slf4j
-    static class DataInitializer implements CommandLineRunner {
-        private final ItemService itemService;
-        private final ItemRepository itemRepository;
-        private final WebClient webClient;
-
-        @Value("${tmdb.api.key}")
-        private String tmdbApiKey;
-
-        @Autowired
-        public DataInitializer(ItemService itemService, ItemRepository itemRepository, WebClient.Builder webClientBuilder) {
-            this.itemService = itemService;
-            this.itemRepository = itemRepository;
-            this.webClient = webClientBuilder.build();
-        }
-
-        @Override
-        public void run(String... args) throws Exception {
-            registerTMDBMovies();
-        }
-
-        private void registerTMDBMovies() {
-            String apiKey = getTmdbApiKey();
-            int currentPage = 1;
-
-            while (currentPage <= 500) {
-                // TMDB API에서 한국어 영화 목록 가져오기 (페이지별로 데이터 요청, language 파라미터 추가)
-                String url = "https://api.themoviedb.org/3/movie/popular?api_key=" + apiKey + "&page=" + currentPage + "&language=ko-KR";
-                Mono<TMDBMovieListResponse> responseMono = webClient.get()
-                        .uri(url)
-                        .retrieve()
-                        .bodyToMono(TMDBMovieListResponse.class);
-
-                try {
-                    // 응답 데이터에서 필요한 정보 추출하여 ItemEntity에 등록
-                    TMDBMovieListResponse movieListResponse = responseMono.block();
-                    if (movieListResponse != null) {
-                        List<TMDBMovieDTO> movies = movieListResponse.getResults();
-
-                        // 중복 등록 방지를 위해 이미 저장된 영화 목록 확인
-                        Set<String> existingMovies = new HashSet<>();
-                        for (ItemEntity item : itemService.getAllItems()) {
-                            existingMovies.add(item.getItemNm());
-                        }
-
-                        // 이미 등록된 영화인 경우 건너뛰고 아닌 경우만 등록
-                        for (TMDBMovieDTO movie : movies) {
-                            if (existingMovies.contains(movie.getTitle())) {
-                                log.info("이미 등록된 영화: " + movie.getTitle());
-                                continue;
-                            }
-
-                            // 키워드로 성인영화 저장 안 하기
-                            String keywordUrl = "https://api.themoviedb.org/3/movie/" + movie.getMovieId() + "/keywords?api_key=" + apiKey;
-                            List<String> keywordNames = Arrays.asList("erotic movie", "adultery", "softcore");
-                            boolean adultMovie = false;
-
-                            Mono<KeywordListResponse> keywordResponseMono = webClient.get()
-                                    .uri(keywordUrl)
-                                    .retrieve()
-                                    .bodyToMono(KeywordListResponse.class);
-
-                            KeywordListResponse keywordListResponse = keywordResponseMono.block();
-
-                            if(keywordListResponse.getKeywords() == null || keywordListResponse.getKeywords().size() == 0){ // 키워드 없는 것도 제외
-                                adultMovie = true;
-                                continue;
-                            }
-                            else if (keywordListResponse != null) {
-                                for (KeywordDTO keyword : keywordListResponse.getKeywords()) {
-                                    for(String keywordName : keywordNames){
-                                        if(keyword.getKeywordName().equals(keywordName)){
-                                            adultMovie = true;
-                                            break;
-                                        }
-                                    }
-                                    if(adultMovie == true) break;
-                                }
-                            }
-
-                            if(adultMovie == true) continue; // 성인 영화가 아닌 경우에만 등록
-
-                            ItemDTO itemDTO = new ItemDTO();
-                            itemDTO.setItemNm(movie.getTitle());
-                            itemDTO.setItemDetail(movie.getOverview());
-                            itemDTO.setMovieId(movie.getMovieId());
-
-                            // Fetch genre details for each genre ID
-                            List<String> genreNames = new ArrayList<>();
-                            for (Integer genreId : movie.getGenreIds()) {
-                                // Construct the URL to fetch genre details using the genre ID
-                                String genreUrl = "https://api.themoviedb.org/3/genre/movie/list?api_key=" + apiKey + "&language=ko";
-
-                                // Make the API call to get genre details
-                                Mono<GenreListResponse> genreResponseMono = webClient.get()
-                                        .uri(genreUrl)
-                                        .retrieve()
-                                        .bodyToMono(GenreListResponse.class);
-
-                                // Block and get the genre response
-                                GenreListResponse genreListResponse = genreResponseMono.block();
-
-                                // Find the genre name for the given genre ID
-                                if (genreListResponse != null) {
-                                    for (GenreDTO genre : genreListResponse.getGenres()) {
-                                        if (genre.getGenreId() == genreId) {
-                                            genreNames.add(genre.getGenreName());
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                            itemDTO.setGenreName(String.join(", ", genreNames));
-
-
-                            // 포스터 URL을 기본 URL과 poster_path를 이용하여 구성
-                            String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
-                            itemDTO.setPosterUrl(posterUrl);
-
-                            // ItemEntity를 생성하고 포스터 URL을 설정한 후 아이템으로 등록합니다.
-                            ItemEntity itemEntity = ItemEntity.builder()
-                                    .itemNm(itemDTO.getItemNm())
-                                    .itemDetail(itemDTO.getItemDetail())
-                                    .posterUrl(itemDTO.getPosterUrl()) // 포스터 URL 설정
-                                    .genreName(itemDTO.getGenreName())
-                                    .build();
-
-                            itemService.saveItemWithPoster(itemEntity);
-                        }
-
-                        // 총 페이지 수 갱신
-                        int totalPages = movieListResponse.getTotalPages();
-
-                        currentPage++;
-                    } else {
-                        log.error("TMDB 데이터 등록 중 오류가 발생하였습니다.");
                         break;
                     }
-                } catch (Exception e) {
-                    log.error("TMDB 데이터 등록 중 오류가 발생하였습니다.", e);
-                    break;
                 }
             }
-
-            log.info("모든 TMDB 데이터 등록이 완료되었습니다.");
-            log.info("총 등록된 아이템 수: " + itemService.getTotalItemCount());
         }
-
-        private String getTmdbApiKey() {
-            return tmdbApiKey;
-        }
+        return ResponseEntity.ok("총 " + count +"개의 성인영화가 삭제되었습니다.");
     }
+
+    @GetMapping("/provider/{movieId}")
+    public ResponseEntity<ProviderDTO> getProviders(@PathVariable String movieId){
+        ProviderDTO krProvider;
+        krProvider = itemService.getProviders(movieId);
+        return ResponseEntity.status(HttpStatus.OK).body(krProvider);
+    }
+
 }
