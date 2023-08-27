@@ -1,16 +1,25 @@
 package com.example.hanul.service;
 
 import com.example.hanul.dto.ItemDTO;
+import com.example.hanul.dto.ProviderDTO;
+import com.example.hanul.dto.ProviderInfoDTO;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.ItemRepository;
+import com.example.hanul.response.ProviderListResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,12 +30,15 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
 
+    private final WebClient webClient;
+
     @Value("${tmdb.api.key}")
     private String tmdbApiKey;
 
     @Autowired
-    public ItemService(ItemRepository itemRepository) {
+    public ItemService(ItemRepository itemRepository, WebClient.Builder webClientBuilder) {
         this.itemRepository = itemRepository;
+        this.webClient = webClientBuilder.baseUrl("https://api.themoviedb.org/3").build();
     }
 
     // TMDB API 키를 가져오는 메서드
@@ -164,5 +176,41 @@ public class ItemService {
             return true;
         }
         return false;
+    }
+
+    public ItemEntity getItemByMovieId(String movieId) {
+        return itemRepository.findByMovieId(movieId).orElse(null);
+    }
+
+    public ProviderDTO getProviders(String movieId){
+        String providerUrl = "https://api.themoviedb.org/3/movie/" + movieId + "/watch/providers?api_key=" + getTmdbApiKey();
+        Mono<ProviderListResponse> providerResponseMono = webClient.get()
+                .uri(providerUrl)
+                .retrieve()
+                .bodyToMono(ProviderListResponse.class);
+
+        ProviderListResponse providerListResponse = providerResponseMono.block();
+
+        if (providerListResponse != null) {
+            ProviderDTO krProvider = providerListResponse.getResults().get("KR");
+            return krProvider;
+        } else{
+            log.info("provider를 찾을 수 없습니다.");
+            return null;
+        }
+    }
+
+    public List<ProviderInfoDTO> getProviderInfo(List<ProviderInfoDTO> providerInfo){
+        List<ProviderInfoDTO> currentProviders = providerInfo;
+        List<ProviderInfoDTO> updatedProviders = new ArrayList<>();
+        for(ProviderInfoDTO buy : currentProviders){
+            String currentLogoPath = buy.getLogoPath();
+            if (currentLogoPath != null && !currentLogoPath.isEmpty()) {
+                String newLogoPath = "https://www.themoviedb.org/t/p/original" + currentLogoPath;
+                buy.setLogoPath(newLogoPath); // 로고 경로 변경
+            }
+            updatedProviders.add(buy);
+        }
+        return updatedProviders;
     }
 }
