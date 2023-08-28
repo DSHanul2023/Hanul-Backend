@@ -12,6 +12,7 @@ public interface InquiryRepository extends JpaRepository<InquiryEntity,String> {
     List<InquiryEntity> findByMemberId(String memberId);
     List<InquiryEntity> findByMemberIdAndInquiryNmContainingIgnoreCase(String memberId, String inquiryNm);
     List<InquiryEntity> findByIdContainingIgnoreCase(String idx);
+    List<InquiryEntity> findByInquiryNmContainingIgnoreCase(String search);
 
 
 }

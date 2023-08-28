@@ -1,8 +1,12 @@
 package com.example.hanul;
 
+import com.example.hanul.dto.GenreDTO;
 import com.example.hanul.dto.ItemDTO;
+import com.example.hanul.dto.KeywordDTO;
 import com.example.hanul.dto.TMDBMovieDTO;
 import com.example.hanul.model.ItemEntity;
+import com.example.hanul.response.GenreListResponse;
+import com.example.hanul.response.KeywordListResponse;
 import com.example.hanul.response.TMDBMovieListResponse;
 import com.example.hanul.service.ItemService;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,6 +18,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -60,9 +66,67 @@ public class DataInitializer implements CommandLineRunner {
                 if (movieListResponse != null) {
                     List<TMDBMovieDTO> movies = movieListResponse.getResults();
                     for (TMDBMovieDTO movie : movies) {
+                        // 키워드로 성인영화 저장 안 하기
+                        String keywordUrl = "https://api.themoviedb.org/3/movie/" + movie.getMovieId() + "/keywords?api_key=" + apiKey;
+                        List<String> keywordNames = Arrays.asList("erotic movie", "adultery", "softcore");
+                        boolean adultMovie = false;
+
+                        Mono<KeywordListResponse> keywordResponseMono = webClient.get()
+                                .uri(keywordUrl)
+                                .retrieve()
+                                .bodyToMono(KeywordListResponse.class);
+
+                        KeywordListResponse keywordListResponse = keywordResponseMono.block();
+
+                        if(keywordListResponse.getKeywords() == null || keywordListResponse.getKeywords().size() == 0){ // 키워드 없는 것도 제외
+                            adultMovie = true;
+                            continue;
+                        }
+                        else if (keywordListResponse != null) {
+                            for (KeywordDTO keyword : keywordListResponse.getKeywords()) {
+                                for(String keywordName : keywordNames){
+                                    if(keyword.getKeywordName().equals(keywordName)){
+                                        adultMovie = true;
+                                        break;
+                                    }
+                                }
+                                if(adultMovie == true) break;
+                            }
+                        }
+
+                        if(adultMovie == true) continue; // 성인 영화가 아닌 경우에만 등록
+
                         ItemDTO itemDTO = new ItemDTO();
                         itemDTO.setItemNm(movie.getTitle());
                         itemDTO.setItemDetail(movie.getOverview());
+                        itemDTO.setMovieId(movie.getMovieId());
+
+                        // Fetch genre details for each genre ID
+                        List<String> genreNames = new ArrayList<>();
+                        for (Integer genreId : movie.getGenreIds()) {
+                            // Construct the URL to fetch genre details using the genre ID
+                            String genreUrl = "https://api.themoviedb.org/3/genre/movie/list?api_key=" + apiKey + "&language=ko";
+
+                            // Make the API call to get genre details
+                            Mono<GenreListResponse> genreResponseMono = webClient.get()
+                                    .uri(genreUrl)
+                                    .retrieve()
+                                    .bodyToMono(GenreListResponse.class);
+
+                            // Block and get the genre response
+                            GenreListResponse genreListResponse = genreResponseMono.block();
+
+                            // Find the genre name for the given genre ID
+                            if (genreListResponse != null) {
+                                for (GenreDTO genre : genreListResponse.getGenres()) {
+                                    if (genre.getGenreId() == genreId) {
+                                        genreNames.add(genre.getGenreName());
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        itemDTO.setGenreName(String.join(", ", genreNames));
 
                         // 포스터 URL을 기본 URL과 poster_path를 이용하여 구성
                         String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
@@ -73,6 +137,8 @@ public class DataInitializer implements CommandLineRunner {
                                 .itemNm(itemDTO.getItemNm())
                                 .itemDetail(itemDTO.getItemDetail())
                                 .posterUrl(itemDTO.getPosterUrl()) // 포스터 URL 설정
+                                .genreName(itemDTO.getGenreName())
+                                .movieId(itemDTO.getMovieId())
                                 .build();
 
                         itemService.saveItemWithPoster(itemEntity);
