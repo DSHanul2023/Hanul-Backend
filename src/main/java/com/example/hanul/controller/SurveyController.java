@@ -1,12 +1,10 @@
 package com.example.hanul.controller;
 
+import com.example.hanul.dto.RecommandMovieDTO;
 import com.example.hanul.dto.ResponseDTO;
 import com.example.hanul.dto.SurveyDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -20,25 +18,34 @@ import java.util.Map;
 public class SurveyController {
 
     @PostMapping
-    public ResponseEntity<ResponseDTO<String>> processSurvey(@RequestBody SurveyDTO surveyDTO) {
+    public ResponseEntity<RecommandMovieDTO> processSurvey(@RequestBody SurveyDTO surveyDTO) {
         // 클라이언트로부터 받은 정보를 이용하여 추천 로직 수행
         String category = surveyDTO.getCategory();
         List<String> selectedItems = surveyDTO.getSelectedItems();
 
         // Flask 서버에 선택 항목 전달하고 응답 받아오기
-        String flaskResponse = sendRequestToFlask(selectedItems);
+        ResponseEntity<Map<String, Object>> flaskResponse = sendRequestToFlask(selectedItems);
 
-        // 여기에 추천 로직을 구현하고 Flask 응답을 추가하여 ResponseDTO에 담기
-        String response = "선택한 " + category + " : " + selectedItems.toString() + " 에 대한 추천 결과입니다. " + flaskResponse;
+        // Flask 서버로부터 받은 JSON 응답 데이터
+        Map<String, Object> responseBody = flaskResponse.getBody();
 
-        ResponseDTO<String> responseDTO = ResponseDTO.<String>builder()
-                .data(List.of(response))
+        // 추천된 영화 목록 가져오기
+        List<Map<String, String>> recommendedMovies = (List<Map<String, String>>) responseBody.get("recommended_movies");
+
+        // 추천 결과 문장 생성
+        String response = category + " : " + selectedItems.toString() + " 에 대한 추천 결과입니다. ";
+
+        // 여기에 response를 RecommandMovieDTO에 담기
+        RecommandMovieDTO recommandMovieDTO = RecommandMovieDTO.builder()
+                .recommendedMovies(recommendedMovies)
+                .response(response)
                 .build();
 
-        return ResponseEntity.ok(responseDTO);
+        return ResponseEntity.ok(recommandMovieDTO);
     }
 
-    private String sendRequestToFlask(List<String> selectedItems) {
+
+    private ResponseEntity<Map<String, Object>> sendRequestToFlask(List<String> selectedItems) {
         try {
             String flaskUrl = "http://localhost:5000/survey";
 
@@ -55,14 +62,13 @@ public class SurveyController {
 
             // RestTemplate을 사용하여 Flask 서버에 POST 요청 전송
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<String> responseEntity = restTemplate.postForEntity(flaskUrl, requestEntity, String.class);
+            ResponseEntity<Map> responseEntity = restTemplate.postForEntity(flaskUrl, requestEntity, Map.class);
 
-            // Flask 서버로부터 받은 JSON 응답 데이터
-            String responseBody = responseEntity.getBody();
-
-            return responseBody;
+            // Flask 서버로부터 받은 JSON 응답 데이터 반환
+            return ResponseEntity.ok(responseEntity.getBody());
         } catch (Exception e) {
-            return e.toString();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.toString()));
         }
     }
 }
