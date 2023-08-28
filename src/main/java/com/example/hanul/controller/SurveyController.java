@@ -1,6 +1,5 @@
 package com.example.hanul.controller;
 
-import com.example.hanul.dto.BoardDTO;
 import com.example.hanul.dto.ResponseDTO;
 import com.example.hanul.dto.SurveyDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,14 +18,18 @@ import java.util.Map;
 @RequestMapping("/survey")
 @CrossOrigin(origins = "http://localhost:3000")
 public class SurveyController {
+
     @PostMapping
     public ResponseEntity<ResponseDTO<String>> processSurvey(@RequestBody SurveyDTO surveyDTO) {
         // 클라이언트로부터 받은 정보를 이용하여 추천 로직 수행
         String category = surveyDTO.getCategory();
         List<String> selectedItems = surveyDTO.getSelectedItems();
 
-        // 여기에 추천 로직을 구현하고 결과를 생성하여 ResponseDTO에 담기
-        String response = "선택한 " + category + " : " + selectedItems.toString() + " 에 대한 추천 결과입니다.";
+        // Flask 서버에 선택 항목 전달하고 응답 받아오기
+        String flaskResponse = sendRequestToFlask(selectedItems);
+
+        // 여기에 추천 로직을 구현하고 Flask 응답을 추가하여 ResponseDTO에 담기
+        String response = "선택한 " + category + " : " + selectedItems.toString() + " 에 대한 추천 결과입니다. " + flaskResponse;
 
         ResponseDTO<String> responseDTO = ResponseDTO.<String>builder()
                 .data(List.of(response))
@@ -35,7 +38,7 @@ public class SurveyController {
         return ResponseEntity.ok(responseDTO);
     }
 
-    public String handleFlask(List<String> selectedItems) {
+    private String sendRequestToFlask(List<String> selectedItems) {
         try {
             String flaskUrl = "http://localhost:5000/survey";
 
