@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -116,4 +117,19 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Member not found");
         }
     }
+
+    @PostMapping("/uploadProfilePicture/{memberId}")
+    public ResponseEntity<String> uploadProfilePicture(
+            @PathVariable String memberId,
+            @RequestParam("file") MultipartFile file
+    ) {
+        try {
+            memberService.updateProfilePicture(memberId, file);
+            return ResponseEntity.ok("프로필 사진이 성공적으로 업로드되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("프로필 사진 업로드 중에 오류가 발생했습니다.");
+        }
+    }
+
 }

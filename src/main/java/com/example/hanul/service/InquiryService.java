@@ -73,6 +73,9 @@ public class InquiryService {
         return retrieve(entity.getMemberId());
     }
     public List<InquiryEntity> searchInquiries( String query) {
+        return repository.findByInquiryNmContainingIgnoreCase(query);
+    }
+    public List<InquiryEntity> getInquiries( String query) {
         return repository.findByIdContainingIgnoreCase(query);
     }
 }
