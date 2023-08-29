@@ -1,60 +1,77 @@
 package com.example.hanul.controller;
 
-import com.example.hanul.dto.BoardDTO;
-import com.example.hanul.dto.ResponseDTO;
+import com.example.hanul.dto.RecommandMovieDTO;
 import com.example.hanul.dto.SurveyDTO;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/survey")
+@CrossOrigin(origins = "http://localhost:3000")
 public class SurveyController {
+
     @PostMapping
-    public ResponseEntity<String> processSurvey(@RequestBody SurveyDTO surveyDTO) {
-        // 클라이언트로부터 받은 정보를 이용하여 추천 로직 수행
-        String category = surveyDTO.getCategory();
+    public ResponseEntity<Map<String, Object>> processSurvey(@RequestBody SurveyDTO surveyDTO) {
         List<String> selectedItems = surveyDTO.getSelectedItems();
 
-        // 여기에 추천 로직을 구현하고 결과를 생성하여 반환하면 됩니다.
-        // 예시로 응답을 만들어 반환하겠습니다.
-        String response = "선택한 " + category + " : " + selectedItems.toString() + " 에 대한 추천 결과입니다.";
+        ResponseEntity<Map> flaskResponse = sendRequestToFlask(selectedItems);
+        Map<String, Object> responseBody = flaskResponse.getBody();
 
-        return ResponseEntity.ok(response);
+        List<List<String>> recommendedMoviesData = (List<List<String>>) responseBody.get("recommended_movies");
+
+        // Convert each string list to a list of maps
+        List<Map<String, Object>> recommendedMovies = recommendedMoviesData.stream()
+                .map(movieList -> {
+                    Map<String, Object> movieMap = new HashMap<>();
+                    movieMap.put("movieId", movieList.get(0));
+                    movieMap.put("genreName", movieList.get(1));
+                    movieMap.put("itemDetail", movieList.get(2));
+                    movieMap.put("itemNm", movieList.get(3));
+                    movieMap.put("posterUrl", movieList.get(4));
+                    // You can add more key-value pairs if needed
+                    return movieMap;
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("recommended_movies", recommendedMovies);
+        responseMap.put("response", "null : " + selectedItems.toString() + " 에 대한 추천 결과입니다. ");
+
+        return ResponseEntity.ok(responseMap);
     }
-    public String handleFlask(String question) throws Exception {
+
+
+    private ResponseEntity<Map> sendRequestToFlask(List<String> selectedItems) {
         try {
-            String flaskUrl = "http://localhost:5000/process";
+            String flaskUrl = "http://localhost:5000/survey";
 
-            // 플라스크 서버에 전송할 JSON 데이터
-            String requestData = String.format("{\"question\": \"%s\"}", question);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String requestData = objectMapper.writeValueAsString(Map.of("selectedItems", selectedItems));
 
-            // HTTP 요청 헤더 설정
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // HTTP 요청 엔티티 생성
             HttpEntity<String> requestEntity = new HttpEntity<>(requestData, headers);
 
-            // RestTemplate을 사용하여 플라스크 서버에 POST 요청 전송
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<String> responseEntity = restTemplate.postForEntity(flaskUrl, requestEntity, String.class);
+            ResponseEntity<Map> responseEntity = restTemplate.exchange(
+                    flaskUrl, HttpMethod.POST, requestEntity, Map.class
+            );
 
-            // 플라스크 서버로부터 받은 JSON 응답 데이터
-            String responseBody = responseEntity.getBody();
+            return responseEntity;
 
-            return responseBody;
         } catch (Exception e) {
-            return e.toString();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.toString()));
         }
     }
 }

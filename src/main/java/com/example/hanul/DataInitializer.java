@@ -29,7 +29,6 @@ public class DataInitializer implements CommandLineRunner {
     public int getTotalPages() {
         return totalPages;
     }
-
     private final ItemService itemService;
     private final WebClient webClient;
 
