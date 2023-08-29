@@ -13,5 +13,5 @@ import java.util.Map;
 @Data
 public class RecommandMovieDTO {
     private String response;
-    private List<Map<String, String>> recommendedMovies;
+    private List<Map<String, Object>> recommendedMovies;
 }
