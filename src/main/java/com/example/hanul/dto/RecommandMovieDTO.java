@@ -1,9 +1,7 @@
 package com.example.hanul.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.util.List;
 import java.util.Map;
 
@@ -13,5 +11,5 @@ import java.util.Map;
 @Data
 public class RecommandMovieDTO {
     private String response;
-    private List<Map<String, Object>> recommendedMovies;
+    private List<List<Map<String, Object>>> recommendedMovies;  // Corrected type here
 }
