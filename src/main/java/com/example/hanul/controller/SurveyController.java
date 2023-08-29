@@ -20,8 +20,7 @@ import java.util.stream.Collectors;
 public class SurveyController {
 
     @PostMapping
-    public ResponseEntity<RecommandMovieDTO> processSurvey(@RequestBody SurveyDTO surveyDTO) {
-        String category = surveyDTO.getCategory();
+    public ResponseEntity<Map<String, Object>> processSurvey(@RequestBody SurveyDTO surveyDTO) {
         List<String> selectedItems = surveyDTO.getSelectedItems();
 
         ResponseEntity<Map> flaskResponse = sendRequestToFlask(selectedItems);
@@ -30,28 +29,25 @@ public class SurveyController {
         List<List<String>> recommendedMoviesData = (List<List<String>>) responseBody.get("recommended_movies");
 
         // Convert each string list to a list of maps
-        List<List<Map<String, Object>>> recommendedMovies = recommendedMoviesData.stream()
-                .map(movieList -> movieList.stream()
-                        .map(movieId -> {
-                            Map<String, Object> movieMap = new HashMap<>();
-                            movieMap.put("movieId", movieId);
-                            return movieMap;
-                        })
-                        .collect(Collectors.toList())
-                )
+        List<Map<String, Object>> recommendedMovies = recommendedMoviesData.stream()
+                .map(movieList -> {
+                    Map<String, Object> movieMap = new HashMap<>();
+                    movieMap.put("movieId", movieList.get(0));
+                    movieMap.put("genreName", movieList.get(1));
+                    movieMap.put("itemDetail", movieList.get(2));
+                    movieMap.put("itemNm", movieList.get(3));
+                    movieMap.put("posterUrl", movieList.get(4));
+                    // You can add more key-value pairs if needed
+                    return movieMap;
+                })
                 .collect(Collectors.toList());
 
-        String response = category + " : " + selectedItems.toString() + " 에 대한 추천 결과입니다. ";
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("recommended_movies", recommendedMovies);
+        responseMap.put("response", "null : " + selectedItems.toString() + " 에 대한 추천 결과입니다. ");
 
-        RecommandMovieDTO recommandMovieDTO = RecommandMovieDTO.builder()
-                .recommendedMovies(recommendedMovies)
-                .response(response)
-                .build();
-
-        return ResponseEntity.ok(recommandMovieDTO);
+        return ResponseEntity.ok(responseMap);
     }
-
-
 
     private ResponseEntity<Map> sendRequestToFlask(List<String> selectedItems) {
         try {
