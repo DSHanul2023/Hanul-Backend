@@ -4,6 +4,8 @@ import com.example.hanul.dto.RecommandMovieDTO;
 import com.example.hanul.dto.ResponseDTO;
 import com.example.hanul.dto.SurveyDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
-
+@Slf4j
 @RestController
 @RequestMapping("/survey")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -24,13 +26,12 @@ public class SurveyController {
         List<String> selectedItems = surveyDTO.getSelectedItems();
 
         // Flask 서버에 선택 항목 전달하고 응답 받아오기
-        ResponseEntity<Map<String, Object>> flaskResponse = sendRequestToFlask(selectedItems);
-
+        ResponseEntity<Map> flaskResponse = sendRequestToFlask(selectedItems);
         // Flask 서버로부터 받은 JSON 응답 데이터
         Map<String, Object> responseBody = flaskResponse.getBody();
 
         // 추천된 영화 목록 가져오기
-        List<Map<String, String>> recommendedMovies = (List<Map<String, String>>) responseBody.get("recommended_movies");
+        List<Map<String, Object>> recommendedMovies = (List<Map<String, Object>>) responseBody.get("recommended_movies");;
 
         // 추천 결과 문장 생성
         String response = category + " : " + selectedItems.toString() + " 에 대한 추천 결과입니다. ";
@@ -45,7 +46,7 @@ public class SurveyController {
     }
 
 
-    private ResponseEntity<Map<String, Object>> sendRequestToFlask(List<String> selectedItems) {
+    private ResponseEntity<Map> sendRequestToFlask(List<String> selectedItems) {
         try {
             String flaskUrl = "http://localhost:5000/survey";
 
@@ -62,10 +63,12 @@ public class SurveyController {
 
             // RestTemplate을 사용하여 Flask 서버에 POST 요청 전송
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<Map> responseEntity = restTemplate.postForEntity(flaskUrl, requestEntity, Map.class);
+            ResponseEntity<Map> responseEntity = restTemplate.exchange(
+                    flaskUrl, HttpMethod.POST, requestEntity, Map.class
+            );
 
-            // Flask 서버로부터 받은 JSON 응답 데이터 반환
-            return ResponseEntity.ok(responseEntity.getBody());
+            return responseEntity;
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", e.toString()));

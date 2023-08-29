@@ -13,7 +13,7 @@ public class BoardDTO {
     private String type;
     private String title;
     private String contents;
-    private byte[] image;
+    private String image;
     private String author;
     private String date;
     private String idx;
