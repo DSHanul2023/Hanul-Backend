@@ -4,6 +4,7 @@ import com.example.hanul.dto.ChatDTO;
 import com.example.hanul.model.ChatEntity;
 import com.example.hanul.service.ChatService;
 import com.example.hanul.service.DialogflowService;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -13,13 +14,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.web.client.RestTemplate;
-
 @RestController
 @RequestMapping("/chats")
 public class ChatController {
     private final ChatService chatService;
     private final DialogflowService dialogflowService;
-
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
 
     @Autowired
@@ -46,14 +45,21 @@ public class ChatController {
                 logger.info("[사용자 채팅 저장 및 응답] 입력: {} 응답: {} 액션: {}", userMessage, dialogflowResponse, action);
 
                 String botResponseContent;
-
-                if ("listen.support".equals(action)) {
+                boolean recommend_status = false;
+                if(userMessage.contains("추천")){
+                    recommend_status = true;
+                    botResponseContent = dialogflowResponse + "\n 그럴때 이런 영화는 어때요?";
+                }
+                else if ("listen.support".equals(action)) {
                     botResponseContent = handleFlask(userMessage); // 플라스크 응답 사용
                 } else {
                     botResponseContent = dialogflowResponse;
+                    if ("recommend".equals(action)){
+                        recommend_status = true;
+                    }
                 }
 
-                return ResponseEntity.status(HttpStatus.OK).body(new ChatEntity(null, botResponseContent, null, LocalDateTime.now()));
+                return ResponseEntity.status(HttpStatus.OK).body(new ChatEntity(null, botResponseContent, null, LocalDateTime.now(),recommend_status));
             } catch (IOException e) {
                 logger.error("Dialogflow 통신 실패", e);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
