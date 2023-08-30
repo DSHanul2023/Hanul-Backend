@@ -62,11 +62,8 @@ public class ChatController {
                 }
                 else if ("listen.support".equals(action)) {
                     botResponseContent = handleFlask(userMessage); // 플라스크 응답 사용
-                    long flaskEndTime = System.currentTimeMillis(); // Flask 요청 종료 시간 기록
-
-                    logger.info("Flask 요청 시간: {}ms", (flaskEndTime - flaskStartTime));
                 } else {
-                    botResponseContent = dialogflowResponse;
+                    botResponseContent = fullfillmentText;
                     if ("recommend".equals(action)){
                         recommend_status = true;
                     }
