@@ -47,7 +47,7 @@ public class BoardController {
                                     @RequestParam("type") String type,
                                     @RequestPart(value = "image", required = false)  MultipartFile image) {
         Optional<MemberEntity> member = memberRepository.findById(userId);
-        if (member == null) {
+        if (!member.isPresent()) {
             throw new RuntimeException("User not found.");
         }
         try {
@@ -60,8 +60,7 @@ public class BoardController {
             entity.setDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             if (image != null) {
                 if (!image.isEmpty()) {
-                    byte[] imageBytes = image.getBytes();
-                    entity.setImage(imageBytes);
+                    service.saveImage(image,entity);
                 }
             }
             List<BoardEntity> entities = service.create(entity);
@@ -106,11 +105,11 @@ public class BoardController {
             entity.setIdx(idx);
             entity.setTitle(title);
             entity.setContents(contents);
+            entity.setMemberId(userId);
             entity.setDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             if (image != null) {
                 if (!image.isEmpty()) {
-                    byte[] imageBytes = image.getBytes();
-                    entity.setImage(imageBytes);
+                    service.saveImage(image,entity);
                 }
             }
             List<BoardEntity> entities = service.update(entity);
