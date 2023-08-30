@@ -3,7 +3,6 @@ package com.example.hanul.controller;
 import com.example.hanul.dto.*;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
-import com.example.hanul.repository.ItemRepository;
 import com.example.hanul.response.*;
 import com.example.hanul.service.ItemService;
 import com.example.hanul.service.MemberService;
@@ -73,7 +72,7 @@ public class ItemController {
     // 주어진 영화 ID에 해당하는 상품의 세부 정보를 가져옴
     @GetMapping("/movieId/{movieId}")
     public ResponseEntity<Object> getItemDetailsByMovieId(@PathVariable String movieId) {
-        ItemEntity item = itemService.getItemByMovieId(movieId);
+        ItemEntity item = itemService.getItemById(movieId);
         if (item != null) {
             return ResponseEntity.ok(item);
         } else {
@@ -125,11 +124,14 @@ public class ItemController {
         }
 
         ItemEntity itemEntity = ItemEntity.builder()
+                .id(itemDTO.getId())
                 .itemNm(itemDTO.getItemNm())
                 .itemDetail(itemDTO.getItemDetail())
                 .member(member)
                 .genreName(itemDTO.getGenreName())
-                .movieId(itemDTO.getMovieId())
+                .keyword(itemDTO.getKeyword())
+                .cast(itemDTO.getCast())
+                .director(itemDTO.getDirector())
                 .build();
 
         // 중복 등록 방지를 위해 이미 저장된 아이템인지 확인
@@ -155,7 +157,7 @@ public class ItemController {
         int count=0;
         for (ItemEntity item : itemService.getAllItems()) {
             // 이미 등록된 영화 중 성인영화가 존재하면 삭제
-            String releaseDatesUrl = "https://api.themoviedb.org/3/movie/" + item.getMovieId() + "/release_dates?api_key=" + apiKey;
+            String releaseDatesUrl = "https://api.themoviedb.org/3/movie/" + item.getId() + "/release_dates?api_key=" + apiKey;
 
             Mono<ReleaseDateListResponse> releaseDateResponseMono = webClient.get()
                     .uri(releaseDatesUrl)
@@ -170,8 +172,9 @@ public class ItemController {
                         for (ReleaseInfoDTO releaseInfo : releaseDate.getRelease_dates()) {
                             String certification = releaseInfo.getCertification();
                             // 여기에서 certification 값을 사용할 수 있습니다.
-                            if ("18".equals(certification) || "Restricted Screening".equals(certification) || "19+".equals(certification)) {
-                                itemService.deleteAdultMovie(item.getMovieId());
+                            if ("18".equals(certification) || "Restricted Screening".equals(certification)
+                                    || "19+".equals(certification) || "Limited".equals(certification)) {
+                                itemService.deleteAdultMovie(item.getId());
                                 count++;
                                 break;
                             }
@@ -189,6 +192,13 @@ public class ItemController {
         ProviderDTO krProvider;
         krProvider = itemService.getProviders(movieId);
         return ResponseEntity.status(HttpStatus.OK).body(krProvider);
+    }
+
+    @GetMapping("/keywords/{movieId}")
+    public ResponseEntity<List<KeywordDTO>> getKeywords(@PathVariable String movieId){
+        List<KeywordDTO> keywordDTOList;
+        keywordDTOList = itemService.getKeyword(movieId);
+        return ResponseEntity.status(HttpStatus.OK).body(keywordDTOList);
     }
 
 }

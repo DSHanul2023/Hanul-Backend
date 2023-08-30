@@ -1,22 +1,22 @@
 package com.example.hanul.service;
 
-import com.example.hanul.dto.ItemDTO;
-import com.example.hanul.dto.ProviderDTO;
-import com.example.hanul.dto.ProviderInfoDTO;
+import com.example.hanul.dto.*;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.ItemRepository;
+import com.example.hanul.response.CreditListResponse;
+import com.example.hanul.response.KeywordListResponse;
 import com.example.hanul.response.ProviderListResponse;
+import com.example.hanul.response.TMDBMovieListResponse;
+import javassist.compiler.ast.Keyword;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -38,7 +38,13 @@ public class ItemService {
     @Autowired
     public ItemService(ItemRepository itemRepository, WebClient.Builder webClientBuilder) {
         this.itemRepository = itemRepository;
-        this.webClient = webClientBuilder.baseUrl("https://api.themoviedb.org/3").build();
+
+        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(-1)) // to unlimited memory size
+                .build();
+        this.webClient = webClientBuilder
+                .exchangeStrategies(exchangeStrategies) // set exchange strategies
+                .build();
     }
 
     // TMDB API 키를 가져오는 메서드
@@ -129,10 +135,13 @@ public class ItemService {
     public ItemEntity registerItem(ItemDTO itemDTO) {
 
         ItemEntity itemEntity = ItemEntity.builder()
+                .id(itemDTO.getId())
                 .itemNm(itemDTO.getItemNm())
                 .itemDetail(itemDTO.getItemDetail())
                 .genreName(itemDTO.getGenreName())
-                .movieId(itemDTO.getMovieId())
+                .keyword(itemDTO.getKeyword())
+                .cast(itemDTO.getCast())
+                .director(itemDTO.getDirector())
                 .build();
 
         try {
@@ -152,10 +161,13 @@ public class ItemService {
         }
 
         ItemEntity itemEntity = ItemEntity.builder()
+                .id(itemDTO.getId())
                 .itemNm(itemDTO.getItemNm())
                 .itemDetail(itemDTO.getItemDetail())
                 .genreName(itemDTO.getGenreName())
-                .movieId(itemDTO.getMovieId())
+                .keyword(itemDTO.getKeyword())
+                .cast(itemDTO.getCast())
+                .director(itemDTO.getDirector())
                 .member(member)
                 .build();
 
@@ -169,7 +181,7 @@ public class ItemService {
     }
 
     public boolean deleteAdultMovie(String movieId) {
-        Optional<ItemEntity> itemOptional = itemRepository.findByMovieId(movieId);
+        Optional<ItemEntity> itemOptional = itemRepository.findById(movieId);
         if (itemOptional.isPresent()) {
             ItemEntity item = itemOptional.get();
             itemRepository.delete(item);
@@ -178,9 +190,9 @@ public class ItemService {
         return false;
     }
 
-    public ItemEntity getItemByMovieId(String movieId) {
-        return itemRepository.findByMovieId(movieId).orElse(null);
-    }
+//    public ItemEntity getItemByMovieId(String movieId) {
+//        return itemRepository.findByMovieId(movieId).orElse(null);
+//    }
 
     public ProviderDTO getProviders(String movieId){
         String providerUrl = "https://api.themoviedb.org/3/movie/" + movieId + "/watch/providers?api_key=" + getTmdbApiKey();
@@ -213,4 +225,34 @@ public class ItemService {
         }
         return updatedProviders;
     }
+
+    public List<KeywordDTO> getKeyword(String movieId){
+        String keywordsUrl = "https://api.themoviedb.org/3/movie/" + movieId + "/keywords?api_key=" + getTmdbApiKey();
+
+        Mono<KeywordListResponse> keywordResponseMono = webClient.get()
+                .uri(keywordsUrl)
+                .retrieve()
+                .bodyToMono(KeywordListResponse.class);
+
+        KeywordListResponse keywordListResponse = keywordResponseMono.block();
+
+        if(keywordListResponse != null){
+            return keywordListResponse.getKeywords();
+        }
+        else return null;
+    }
+
+    public CreditListResponse getCredit(String movieId){
+        String creditUrl = "https://api.themoviedb.org/3/movie/" + movieId + "/credits?api_key=" + getTmdbApiKey();
+
+        Mono<CreditListResponse> creditResponseMono = webClient.get()
+                .uri(creditUrl)
+                .retrieve()
+                .bodyToMono(CreditListResponse.class);
+
+        CreditListResponse creditListResponse = creditResponseMono.block();
+
+        return creditListResponse;
+    }
+
 }

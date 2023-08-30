@@ -16,8 +16,6 @@ import javax.persistence.*;
 @AllArgsConstructor
 public class ItemEntity {
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name="system-uuid", strategy="uuid")
     @Column(name = "item_id")
     private String id;
 
@@ -37,7 +35,12 @@ public class ItemEntity {
     @Column(nullable = true)
     private String genreName;
 
-    @Column(nullable=false)
-    private String movieId;
+    @Column(nullable = true)
+    private String director;
 
+    @Column(nullable = true)
+    private String cast;
+
+    @Column(nullable = true, length = 1000)
+    private String keyword;
 }
