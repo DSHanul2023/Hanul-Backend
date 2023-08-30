@@ -5,6 +5,7 @@ import com.example.hanul.model.ChatEntity;
 import com.example.hanul.service.ChatService;
 import com.example.hanul.service.DialogflowService;
 import com.google.cloud.dialogflow.v2.DetectIntentResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -14,13 +15,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.web.client.RestTemplate;
-
 @RestController
 @RequestMapping("/chats")
 public class ChatController {
     private final ChatService chatService;
     private final DialogflowService dialogflowService;
-
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
 
     @Autowired
@@ -56,23 +55,24 @@ public class ChatController {
 
                 String botResponseContent;
 
-                if ("listen.support".equals(action)) {
-                    long flaskStartTime = System.currentTimeMillis(); // Flask 요청 시작 시간 기록
+                boolean recommend_status = false;
+                if(userMessage.contains("추천")){
+                    recommend_status = true;
+                    botResponseContent = dialogflowResponse + "\n 그럴때 이런 영화는 어때요?";
+                }
+                else if ("listen.support".equals(action)) {
                     botResponseContent = handleFlask(userMessage); // 플라스크 응답 사용
                     long flaskEndTime = System.currentTimeMillis(); // Flask 요청 종료 시간 기록
 
                     logger.info("Flask 요청 시간: {}ms", (flaskEndTime - flaskStartTime));
                 } else {
-                    botResponseContent = fullfillmentText;
+                    botResponseContent = dialogflowResponse;
+                    if ("recommend".equals(action)){
+                        recommend_status = true;
+                    }
                 }
 
-                long processingEndTime = System.currentTimeMillis(); // 처리 종료 시간 기록
-
-                logger.info("DB 저장 시간: {}ms", (dbSaveEndTime - startTime));
-                logger.info("Dialogflow 통신 시간: {}ms", (dialogflowEndTime - dialogflowStartTime));
-                logger.info("처리 시간: {}ms", (processingEndTime - startTime));
-
-                return ResponseEntity.status(HttpStatus.OK).body(new ChatEntity(null, botResponseContent, null, LocalDateTime.now()));
+                return ResponseEntity.status(HttpStatus.OK).body(new ChatEntity(null, botResponseContent, null, LocalDateTime.now(),recommend_status));
             } catch (IOException e) {
                 logger.error("Dialogflow 통신 실패", e);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);

@@ -30,8 +30,8 @@ public class BoardEntity {
     @Column(nullable = false)
     private String contents;
 
-    @Lob
-    private byte[] image;
+    @Column(nullable = true)
+    private String image;
 
     @Column(nullable = false)
     private String author;
