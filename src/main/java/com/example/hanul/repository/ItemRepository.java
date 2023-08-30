@@ -14,5 +14,5 @@ public interface ItemRepository extends JpaRepository<ItemEntity, String> {
     ItemEntity findByItemNm(String itemNm);
     ItemEntity findByItemNmAndMember(String itemNm, MemberEntity member);
 
-    Optional<ItemEntity> findByMovieId(String movieId);
+//    Optional<ItemEntity> findByMovieId(String movieId);
 }
