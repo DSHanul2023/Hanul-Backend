@@ -4,6 +4,7 @@ import com.example.hanul.dto.*;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.response.*;
+import com.example.hanul.service.FlaskService;
 import com.example.hanul.service.ItemService;
 import com.example.hanul.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
@@ -29,15 +30,17 @@ import java.util.*;
 public class ItemController {
     private final ItemService itemService;
     private final MemberService memberService;
+    private final FlaskService flaskService;
     private final WebClient webClient;
 
     @Value("${tmdb.api.key}")
     private String apiKey;
 
     @Autowired
-    public ItemController(ItemService itemService, MemberService memberService, WebClient.Builder webClientBuilder) {
+    public ItemController(ItemService itemService, MemberService memberService, FlaskService flaskService, WebClient.Builder webClientBuilder) {
         this.itemService = itemService;
         this.memberService = memberService;
+        this.flaskService = flaskService;
         this.webClient = webClientBuilder.baseUrl("https://api.themoviedb.org/3").build();
     }
 
@@ -184,6 +187,16 @@ public class ItemController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
+    }
+
+    // Flask 서버에서 추천된 아이템을 가져와서 응답
+    @GetMapping("/recommend/{memberId}")
+    public ResponseEntity<List<ItemEntity>> recommendItemsFromFlask(@PathVariable String memberId) {
+        // memberId를 사용하여 Flask 서버에 추천 요청을 보내고 응답 받음
+        List<ItemEntity> recommendedItems = flaskService.RecommendWithFlask(memberId);
+
+        // 추천된 아이템 목록을 반환
+        return ResponseEntity.status(HttpStatus.OK).body(recommendedItems);
     }
 
 }
