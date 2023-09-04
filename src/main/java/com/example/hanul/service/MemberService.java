@@ -1,6 +1,7 @@
 package com.example.hanul.service;
 
 import com.example.hanul.dto.MemberDTO;
+import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.MemberRepository;
 import com.example.hanul.security.TokenProvider;
@@ -22,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 import io.jsonwebtoken.Jwts;
@@ -247,5 +249,9 @@ public class MemberService {
         } catch (Exception e) {
             throw new RuntimeException("An error occurred while updating your profile picture.", e);
         }
+    }
+
+    public List<ItemEntity> getBookmarkedItems(MemberEntity member) {
+        return member.getBookmarkedItems();
     }
 }

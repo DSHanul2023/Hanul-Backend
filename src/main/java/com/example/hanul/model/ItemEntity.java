@@ -1,5 +1,7 @@
 package com.example.hanul.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Builder
@@ -28,10 +31,6 @@ public class ItemEntity {
     @Column(nullable = true)
     private String posterUrl; // 영화 포스터 이미지 URL
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = true)
-    private MemberEntity member;
-
     @Column(nullable = true)
     private String genreName;
 
@@ -43,4 +42,8 @@ public class ItemEntity {
 
     @Column(nullable = true, length = 1000)
     private String keyword;
+
+    @ManyToMany(mappedBy = "bookmarkedItems") // "bookmarkedItems"는 MemberEntity에서 정의한 필드 이름
+    @JsonIgnore
+    private List<MemberEntity> bookmarkedByMembers;
 }
