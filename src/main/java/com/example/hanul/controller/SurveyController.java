@@ -44,11 +44,15 @@ public class SurveyController {
 
         Map<String, Object> responseMap = new HashMap<>();
         responseMap.put("recommended_movies", recommendedMovies);
-        responseMap.put("response", "null : " + selectedItems.toString() + " 에 대한 추천 결과입니다. ");
+
+        // 사용자의 선택에 따른 메시지 생성
+        String category = surveyDTO.getCategory();
+        String selectedItemsString = String.join(", ", selectedItems);
+        String responseMessage = category + " : " + selectedItemsString + " 에 대한 추천 결과입니다.";
+        responseMap.put("response", responseMessage);
 
         return ResponseEntity.ok(responseMap);
     }
-
 
     private ResponseEntity<Map> sendRequestToFlask(List<String> selectedItems) {
         try {
