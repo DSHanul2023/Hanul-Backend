@@ -20,6 +20,7 @@ import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,17 +53,6 @@ public class ItemService {
         return tmdbApiKey;
     }
 
-    public ItemEntity saveItem(ItemEntity itemEntity) {
-        try {
-            return itemRepository.save(itemEntity);
-        } catch (DataAccessException e) {
-            log.error("상품 저장 중 데이터 접근 오류가 발생하였습니다.", e);
-        } catch (Exception e) {
-            log.error("상품 저장 중 오류가 발생하였습니다.", e);
-        }
-        return null;
-    }
-
     // ItemEntity와 함께 포스터 URL을 저장
     public ItemEntity saveItemWithPoster(ItemEntity itemEntity) {
         try {
@@ -80,13 +70,8 @@ public class ItemService {
         }
     }
 
-
     public ItemEntity getItemById(String itemId) {
         return itemRepository.findById(itemId).orElse(null);
-    }
-
-    public List<ItemEntity> getItemsByMember(MemberEntity member) {
-        return itemRepository.findByMember(member);
     }
 
     public boolean updateItem(String itemId, ItemDTO itemDTO) {
@@ -152,33 +137,6 @@ public class ItemService {
         }
     }
 
-    // item 북마크에 저장
-    public ItemEntity saveItemForMember(MemberEntity member, ItemDTO itemDTO) {
-        // 중복 등록을 체크하는 로직 추가
-        ItemEntity existingItem = itemRepository.findByItemNmAndMember(itemDTO.getItemNm(), member);
-        if (existingItem != null) {
-            return null; // 이미 등록된 아이템인 경우 null 반환
-        }
-
-        ItemEntity itemEntity = ItemEntity.builder()
-                .id(itemDTO.getId())
-                .itemNm(itemDTO.getItemNm())
-                .itemDetail(itemDTO.getItemDetail())
-                .genreName(itemDTO.getGenreName())
-                .keyword(itemDTO.getKeyword())
-                .cast(itemDTO.getCast())
-                .director(itemDTO.getDirector())
-                .member(member)
-                .build();
-
-        return itemRepository.save(itemEntity);
-    }
-
-    // item 저장 시 북마크 중복 확인
-    public boolean checkIfItemAlreadySaved(MemberEntity member, ItemDTO itemDTO) {
-        ItemEntity existingItem = itemRepository.findByItemNmAndMember(itemDTO.getItemNm(), member);
-        return existingItem != null;
-    }
 
     public boolean deleteAdultMovie(String movieId) {
         Optional<ItemEntity> itemOptional = itemRepository.findById(movieId);
@@ -253,6 +211,36 @@ public class ItemService {
         CreditListResponse creditListResponse = creditResponseMono.block();
 
         return creditListResponse;
+    }
+
+    public ItemEntity bookmarkItem(MemberEntity member, String itemId) {
+        try {
+            ItemEntity itemEntity = itemRepository.findById(itemId)
+                    .orElseThrow(() -> new EntityNotFoundException("Item not found"));
+
+            List<ItemEntity> bookmarkedItems = member.getBookmarkedItems();
+
+            // 중복 북마크 확인
+            if (!bookmarkedItems.contains(itemEntity)) {
+                bookmarkedItems.add(itemEntity);
+
+                // itemEntity의 "bookmarkedByMembers" 필드에도 Member 추가
+                itemEntity.getBookmarkedByMembers().add(member);
+
+                return itemRepository.save(itemEntity);
+            } else {
+                // 이미 북마크된 아이템인 경우 기존 아이템 반환
+                log.warn("이미 북마크된 아이템입니다.");
+                return null;
+            }
+        } catch (DataAccessException e) {
+            log.error("북마크 중 데이터 접근 오류가 발생하였습니다.", e);
+        } catch (EntityNotFoundException e) {
+            log.error("북마크 중 아이템을 찾을 수 없습니다.", e);
+        } catch (Exception e) {
+            log.error("북마크 중 오류가 발생하였습니다.", e);
+        }
+        return null;
     }
 
 }
