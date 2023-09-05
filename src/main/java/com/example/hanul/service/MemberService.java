@@ -1,6 +1,7 @@
 package com.example.hanul.service;
 
 import com.example.hanul.dto.MemberDTO;
+import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.MemberRepository;
 import com.example.hanul.security.TokenProvider;
@@ -18,7 +19,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.Key;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 import io.jsonwebtoken.Jwts;
@@ -216,21 +221,37 @@ public class MemberService {
         MemberEntity member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new EntityNotFoundException("Could not find member"));
         try {
-            String fileName = "profile_picture_" + memberId + ".jpg";
-            Path filePath = Paths.get(uploadDir, fileName);
+//            String fileName = "profile_picture_" + memberId + ".jpg";
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String fileName = "profile_picture_" + memberId + "_" + timestamp + ".jpg";
+
+//            Path filePath = Paths.get(uploadDir, fileName);
+            // Generate folder path based on the current date
+            String dateFolder = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            String folderPath = Paths.get(uploadDir, dateFolder).toString();
+
+            // Create the folder if it doesn't exist
+            Files.createDirectories(Paths.get(folderPath));
 
             // 대상 경로 생성
-            String destinationPath = uploadDir + "/" + fileName;
+//            String destinationPath = uploadDir + "/" + fileName;
+//            Path destination = Paths.get(destinationPath);
+            String destinationPath = Paths.get(folderPath, fileName).toString();
             Path destination = Paths.get(destinationPath);
 
             // 업로드된 파일을 대상으로 복사
             Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
 
             // Update the member's profile picture path
-            member.setProfilePictureName(fileName);
+//            member.setProfilePictureName(fileName);
+            member.setProfilePictureName(dateFolder + "/" + fileName);
             memberRepository.save(member);
         } catch (Exception e) {
             throw new RuntimeException("An error occurred while updating your profile picture.", e);
         }
+    }
+
+    public List<ItemEntity> getBookmarkedItems(MemberEntity member) {
+        return member.getBookmarkedItems();
     }
 }
