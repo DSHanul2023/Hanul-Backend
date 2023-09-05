@@ -31,4 +31,7 @@ public class ChatEntity {
 
     @Column(nullable = false)
     private LocalDateTime timestamp;
+
+    @Column(nullable = false)
+    private boolean recommend_status;
 }

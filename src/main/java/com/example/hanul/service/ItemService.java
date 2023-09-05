@@ -1,9 +1,14 @@
 package com.example.hanul.service;
 
-import com.example.hanul.dto.ItemDTO;
+import com.example.hanul.dto.*;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.repository.ItemRepository;
+import com.example.hanul.response.CreditListResponse;
+import com.example.hanul.response.KeywordListResponse;
+import com.example.hanul.response.ProviderListResponse;
+import com.example.hanul.response.TMDBMovieListResponse;
+import javassist.compiler.ast.Keyword;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +16,11 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,28 +31,26 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
 
+    private final WebClient webClient;
+
     @Value("${tmdb.api.key}")
     private String tmdbApiKey;
 
     @Autowired
-    public ItemService(ItemRepository itemRepository) {
+    public ItemService(ItemRepository itemRepository, WebClient.Builder webClientBuilder) {
         this.itemRepository = itemRepository;
+
+        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(-1)) // to unlimited memory size
+                .build();
+        this.webClient = webClientBuilder
+                .exchangeStrategies(exchangeStrategies) // set exchange strategies
+                .build();
     }
 
     // TMDB API 키를 가져오는 메서드
     public String getTmdbApiKey() {
         return tmdbApiKey;
-    }
-
-    public ItemEntity saveItem(ItemEntity itemEntity) {
-        try {
-            return itemRepository.save(itemEntity);
-        } catch (DataAccessException e) {
-            log.error("상품 저장 중 데이터 접근 오류가 발생하였습니다.", e);
-        } catch (Exception e) {
-            log.error("상품 저장 중 오류가 발생하였습니다.", e);
-        }
-        return null;
     }
 
     // ItemEntity와 함께 포스터 URL을 저장
@@ -62,13 +70,8 @@ public class ItemService {
         }
     }
 
-
     public ItemEntity getItemById(String itemId) {
         return itemRepository.findById(itemId).orElse(null);
-    }
-
-    public List<ItemEntity> getItemsByMember(MemberEntity member) {
-        return itemRepository.findByMember(member);
     }
 
     public boolean updateItem(String itemId, ItemDTO itemDTO) {
@@ -117,10 +120,13 @@ public class ItemService {
     public ItemEntity registerItem(ItemDTO itemDTO) {
 
         ItemEntity itemEntity = ItemEntity.builder()
+                .id(itemDTO.getId())
                 .itemNm(itemDTO.getItemNm())
                 .itemDetail(itemDTO.getItemDetail())
                 .genreName(itemDTO.getGenreName())
-                .movieId(itemDTO.getMovieId())
+                .keyword(itemDTO.getKeyword())
+                .cast(itemDTO.getCast())
+                .director(itemDTO.getDirector())
                 .build();
 
         try {
@@ -131,33 +137,9 @@ public class ItemService {
         }
     }
 
-    // item 북마크에 저장
-    public ItemEntity saveItemForMember(MemberEntity member, ItemDTO itemDTO) {
-        // 중복 등록을 체크하는 로직 추가
-        ItemEntity existingItem = itemRepository.findByItemNmAndMember(itemDTO.getItemNm(), member);
-        if (existingItem != null) {
-            return null; // 이미 등록된 아이템인 경우 null 반환
-        }
-
-        ItemEntity itemEntity = ItemEntity.builder()
-                .itemNm(itemDTO.getItemNm())
-                .itemDetail(itemDTO.getItemDetail())
-                .genreName(itemDTO.getGenreName())
-                .movieId(itemDTO.getMovieId())
-                .member(member)
-                .build();
-
-        return itemRepository.save(itemEntity);
-    }
-
-    // item 저장 시 북마크 중복 확인
-    public boolean checkIfItemAlreadySaved(MemberEntity member, ItemDTO itemDTO) {
-        ItemEntity existingItem = itemRepository.findByItemNmAndMember(itemDTO.getItemNm(), member);
-        return existingItem != null;
-    }
 
     public boolean deleteAdultMovie(String movieId) {
-        Optional<ItemEntity> itemOptional = itemRepository.findByMovieId(movieId);
+        Optional<ItemEntity> itemOptional = itemRepository.findById(movieId);
         if (itemOptional.isPresent()) {
             ItemEntity item = itemOptional.get();
             itemRepository.delete(item);
@@ -165,4 +147,100 @@ public class ItemService {
         }
         return false;
     }
+
+//    public ItemEntity getItemByMovieId(String movieId) {
+//        return itemRepository.findByMovieId(movieId).orElse(null);
+//    }
+
+    public ProviderDTO getProviders(String movieId){
+        String providerUrl = "https://api.themoviedb.org/3/movie/" + movieId + "/watch/providers?api_key=" + getTmdbApiKey();
+        Mono<ProviderListResponse> providerResponseMono = webClient.get()
+                .uri(providerUrl)
+                .retrieve()
+                .bodyToMono(ProviderListResponse.class);
+
+        ProviderListResponse providerListResponse = providerResponseMono.block();
+
+        if (providerListResponse != null) {
+            ProviderDTO krProvider = providerListResponse.getResults().get("KR");
+            return krProvider;
+        } else{
+            log.info("provider를 찾을 수 없습니다.");
+            return null;
+        }
+    }
+
+    public List<ProviderInfoDTO> getProviderInfo(List<ProviderInfoDTO> providerInfo){
+        List<ProviderInfoDTO> currentProviders = providerInfo;
+        List<ProviderInfoDTO> updatedProviders = new ArrayList<>();
+        for(ProviderInfoDTO buy : currentProviders){
+            String currentLogoPath = buy.getLogoPath();
+            if (currentLogoPath != null && !currentLogoPath.isEmpty()) {
+                String newLogoPath = "https://www.themoviedb.org/t/p/original" + currentLogoPath;
+                buy.setLogoPath(newLogoPath); // 로고 경로 변경
+            }
+            updatedProviders.add(buy);
+        }
+        return updatedProviders;
+    }
+
+    public List<KeywordDTO> getKeyword(String movieId){
+        String keywordsUrl = "https://api.themoviedb.org/3/movie/" + movieId + "/keywords?api_key=" + getTmdbApiKey();
+
+        Mono<KeywordListResponse> keywordResponseMono = webClient.get()
+                .uri(keywordsUrl)
+                .retrieve()
+                .bodyToMono(KeywordListResponse.class);
+
+        KeywordListResponse keywordListResponse = keywordResponseMono.block();
+
+        if(keywordListResponse != null){
+            return keywordListResponse.getKeywords();
+        }
+        else return null;
+    }
+
+    public CreditListResponse getCredit(String movieId){
+        String creditUrl = "https://api.themoviedb.org/3/movie/" + movieId + "/credits?api_key=" + getTmdbApiKey();
+
+        Mono<CreditListResponse> creditResponseMono = webClient.get()
+                .uri(creditUrl)
+                .retrieve()
+                .bodyToMono(CreditListResponse.class);
+
+        CreditListResponse creditListResponse = creditResponseMono.block();
+
+        return creditListResponse;
+    }
+
+    public ItemEntity bookmarkItem(MemberEntity member, String itemId) {
+        try {
+            ItemEntity itemEntity = itemRepository.findById(itemId)
+                    .orElseThrow(() -> new EntityNotFoundException("Item not found"));
+
+            List<ItemEntity> bookmarkedItems = member.getBookmarkedItems();
+
+            // 중복 북마크 확인
+            if (!bookmarkedItems.contains(itemEntity)) {
+                bookmarkedItems.add(itemEntity);
+
+                // itemEntity의 "bookmarkedByMembers" 필드에도 Member 추가
+                itemEntity.getBookmarkedByMembers().add(member);
+
+                return itemRepository.save(itemEntity);
+            } else {
+                // 이미 북마크된 아이템인 경우 기존 아이템 반환
+                log.warn("이미 북마크된 아이템입니다.");
+                return null;
+            }
+        } catch (DataAccessException e) {
+            log.error("북마크 중 데이터 접근 오류가 발생하였습니다.", e);
+        } catch (EntityNotFoundException e) {
+            log.error("북마크 중 아이템을 찾을 수 없습니다.", e);
+        } catch (Exception e) {
+            log.error("북마크 중 오류가 발생하였습니다.", e);
+        }
+        return null;
+    }
+
 }

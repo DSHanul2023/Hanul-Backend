@@ -1,7 +1,9 @@
 package com.example.hanul.controller;
 
 import com.example.hanul.dto.MemberDTO;
+import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
+import com.example.hanul.service.ItemService;
 import com.example.hanul.service.MemberService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RestController
 @RequestMapping("/members")
@@ -132,4 +135,14 @@ public class MemberController {
         }
     }
 
+    @GetMapping("/{memberId}/bookmarked-items")
+    public ResponseEntity<List<ItemEntity>> getBookmarkedItems(@PathVariable String memberId) {
+        MemberEntity member = memberService.getMemberById(memberId);
+        if (member != null) {
+            List<ItemEntity> bookmarkedItems = memberService.getBookmarkedItems(member);
+            return new ResponseEntity<>(bookmarkedItems, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }

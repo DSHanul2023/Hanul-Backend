@@ -27,7 +27,7 @@ public class DialogflowService {
         this.sessionsClient = SessionsClient.create(sessionsSettings);
     }
 
-    public String sendToDialogflow(String userMessage) throws IOException {
+    public DetectIntentResponse sendToDialogflow(String userMessage) throws IOException {
         String projectId = "hanulwellness-odgf";
         String sessionId = "eb9aab8b936ace3a66f80d5842b3f659ca7eb699";
 
@@ -43,28 +43,6 @@ public class DialogflowService {
 
         DetectIntentResponse response = sessionsClient.detectIntent(session.toString(), queryInput);
 
-        return response.getQueryResult().getFulfillmentText();
+        return response;
     }
-
-    public String getActionFromResponse(String userMessage) {
-        String projectId = "hanulwellness-odgf";
-        String sessionId = "eb9aab8b936ace3a66f80d5842b3f659ca7eb699";
-
-        SessionName session = SessionName.of(projectId, sessionId);
-
-        TextInput.Builder textInput = TextInput.newBuilder()
-                .setText(userMessage)
-                .setLanguageCode("ko-KR"); // 한국어 언어 코드 설정
-
-        QueryInput queryInput = QueryInput.newBuilder()
-                .setText(textInput)
-                .build();
-
-        DetectIntentResponse response = sessionsClient.detectIntent(session.toString(), queryInput);
-
-        return response.getQueryResult().getAction();
-    }
-
-
-
 }
