@@ -33,10 +33,10 @@ public class SurveyController {
                 .map(movieList -> {
                     Map<String, Object> movieMap = new HashMap<>();
                     movieMap.put("movieId", movieList.get(0));
-                    movieMap.put("genreName", movieList.get(1));
-                    movieMap.put("itemDetail", movieList.get(2));
-                    movieMap.put("itemNm", movieList.get(3));
-                    movieMap.put("posterUrl", movieList.get(4));
+                    movieMap.put("genreName", movieList.get(3));
+                    movieMap.put("itemDetail", movieList.get(4));
+                    movieMap.put("itemNm", movieList.get(5));
+                    movieMap.put("posterUrl", movieList.get(7));
                     // You can add more key-value pairs if needed
                     return movieMap;
                 })
@@ -44,11 +44,15 @@ public class SurveyController {
 
         Map<String, Object> responseMap = new HashMap<>();
         responseMap.put("recommended_movies", recommendedMovies);
-        responseMap.put("response", "null : " + selectedItems.toString() + " 에 대한 추천 결과입니다. ");
+
+        // 사용자의 선택에 따른 메시지 생성
+        String category = surveyDTO.getCategory();
+        String selectedItemsString = String.join(", ", selectedItems);
+        String responseMessage = category + " : " + selectedItemsString + " 에 대한 추천 결과입니다.";
+        responseMap.put("response", responseMessage);
 
         return ResponseEntity.ok(responseMap);
     }
-
 
     private ResponseEntity<Map> sendRequestToFlask(List<String> selectedItems) {
         try {
@@ -66,6 +70,7 @@ public class SurveyController {
             ResponseEntity<Map> responseEntity = restTemplate.exchange(
                     flaskUrl, HttpMethod.POST, requestEntity, Map.class
             );
+
 
             return responseEntity;
 
