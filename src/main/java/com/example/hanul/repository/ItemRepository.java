@@ -10,9 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface ItemRepository extends JpaRepository<ItemEntity, String> {
-    List<ItemEntity> findByMember(MemberEntity member);
     ItemEntity findByItemNm(String itemNm);
-    ItemEntity findByItemNmAndMember(String itemNm, MemberEntity member);
 
-//    Optional<ItemEntity> findByMovieId(String movieId);
+    List<ItemEntity> findByBookmarkedByMembers(MemberEntity member);
 }
