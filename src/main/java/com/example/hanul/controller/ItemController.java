@@ -4,6 +4,7 @@ import com.example.hanul.dto.*;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
 import com.example.hanul.response.*;
+import com.example.hanul.service.FlaskService;
 import com.example.hanul.service.ItemService;
 import com.example.hanul.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
@@ -29,15 +30,17 @@ import java.util.*;
 public class ItemController {
     private final ItemService itemService;
     private final MemberService memberService;
+    private final FlaskService flaskService;
     private final WebClient webClient;
 
     @Value("${tmdb.api.key}")
     private String apiKey;
 
     @Autowired
-    public ItemController(ItemService itemService, MemberService memberService, WebClient.Builder webClientBuilder) {
+    public ItemController(ItemService itemService, MemberService memberService, FlaskService flaskService, WebClient.Builder webClientBuilder) {
         this.itemService = itemService;
         this.memberService = memberService;
+        this.flaskService = flaskService;
         this.webClient = webClientBuilder.baseUrl("https://api.themoviedb.org/3").build();
     }
 
@@ -91,18 +94,6 @@ public class ItemController {
         }
     }
 
-    //주어진 멤버 ID에 해당하는 멤버의 모든 상품 목록을 가져옴
-    @GetMapping("/members/{memberId}")
-    public ResponseEntity<List<ItemEntity>> getItemsByMember(@PathVariable String memberId) {
-        MemberEntity member = memberService.getMemberById(memberId);
-        if (member != null) {
-            List<ItemEntity> items = itemService.getItemsByMember(member);
-            return ResponseEntity.ok(items);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
     //심리 상담 챗봇을 통해 추천된 상품 목록을 가져옴
     @PostMapping("/recommend")
     public ResponseEntity<List<ItemEntity>> recommendItems(@RequestBody String counselingText) {
@@ -112,43 +103,6 @@ public class ItemController {
             return ResponseEntity.ok(recommendedItems);
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    // 로그인에 성공하고 주어진 멤버 ID가 있는 경우, 해당 멤버에게 아이템을 저장
-    @PostMapping("/members/{memberId}/save")
-    public ResponseEntity<String> saveItemForMember(@PathVariable String memberId, @RequestBody ItemDTO itemDTO) {
-        MemberEntity member = memberService.getMemberById(memberId);
-        if (member == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("해당 멤버를 찾을 수 없습니다.");
-        }
-
-        ItemEntity itemEntity = ItemEntity.builder()
-                .id(itemDTO.getId())
-                .itemNm(itemDTO.getItemNm())
-                .itemDetail(itemDTO.getItemDetail())
-                .member(member)
-                .genreName(itemDTO.getGenreName())
-                .keyword(itemDTO.getKeyword())
-                .cast(itemDTO.getCast())
-                .director(itemDTO.getDirector())
-                .build();
-
-        // 중복 등록 방지를 위해 이미 저장된 아이템인지 확인
-//        ItemEntity existingItem = itemService.saveItemWithPoster(itemEntity);
-//        if (existingItem != null) {
-//            return ResponseEntity.status(HttpStatus.OK).body("이미 등록된 상품입니다.");
-//        }
-        boolean itemAlreadySaved = itemService.checkIfItemAlreadySaved(member, itemDTO);
-        if (itemAlreadySaved) {
-            return ResponseEntity.status(HttpStatus.OK).body("이미 등록된 상품입니다.");
-        }
-
-        ItemEntity createdItem = itemService.saveItem(itemEntity);
-        if (createdItem != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body("상품 저장이 성공하였습니다.");
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("상품 저장에 실패하였습니다.");
         }
     }
 
@@ -199,6 +153,50 @@ public class ItemController {
         List<KeywordDTO> keywordDTOList;
         keywordDTOList = itemService.getKeyword(movieId);
         return ResponseEntity.status(HttpStatus.OK).body(keywordDTOList);
+    }
+
+    // 로그인에 성공하고 주어진 멤버 ID가 있는 경우, 해당 멤버에게 아이템을 저장
+    @PostMapping("/{itemId}/bookmark/{memberId}")
+    public ResponseEntity<ItemEntity> bookmarkItem(
+            @PathVariable String itemId,
+            @PathVariable String memberId
+    ) {
+        ItemEntity item = itemService.getItemById(itemId);
+        MemberEntity member = memberService.getMemberById(memberId);
+
+        if (item != null && member != null) {
+            ItemEntity updatedItem = itemService.bookmarkItem(member, itemId);
+            if (updatedItem != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(updatedItem);
+            } else {
+                // 중복된 아이템인 경우 409 Conflict 상태 코드와 메시지 반환
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    // 해당 item에 북마크한 member 정보
+    @GetMapping("/{itemId}/bookmarked-members")
+    public ResponseEntity<List<MemberEntity>> getBookmarkedMembers(@PathVariable String itemId) {
+        ItemEntity item = itemService.getItemById(itemId);
+        if (item != null) {
+            List<MemberEntity> members = item.getBookmarkedByMembers();
+            return ResponseEntity.status(HttpStatus.OK).body(members);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    // Flask 서버에서 추천된 아이템을 가져와서 응답
+    @GetMapping("/recommend/{memberId}")
+    public ResponseEntity<List<ItemEntity>> recommendItemsFromFlask(@PathVariable String memberId) {
+        // memberId를 사용하여 Flask 서버에 추천 요청을 보내고 응답 받음
+        List<ItemEntity> recommendedItems = flaskService.RecommendWithFlask(memberId);
+
+        // 추천된 아이템 목록을 반환
+        return ResponseEntity.status(HttpStatus.OK).body(recommendedItems);
     }
 
 }
