@@ -1,17 +1,20 @@
-package com.example.hanul.response;
+package com.example.hanul.dto;
 
-import com.example.hanul.dto.KeywordDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class KeywordListResponse {
-    @JsonProperty("keywords")
-    private List<KeywordDTO> keywords;
+public class CreditDTO {
+    @JsonProperty("name")
+    String name;
+
+    @JsonProperty("job")
+    String job;
+
+    @JsonProperty("order")
+    Integer order;
 }

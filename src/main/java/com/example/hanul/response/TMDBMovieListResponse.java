@@ -1,5 +1,8 @@
 package com.example.hanul.response;
 
+import com.example.hanul.dto.CreditDTO;
+import com.example.hanul.dto.GenreDTO;
+import com.example.hanul.dto.KeywordDTO;
 import com.example.hanul.dto.TMDBMovieDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
