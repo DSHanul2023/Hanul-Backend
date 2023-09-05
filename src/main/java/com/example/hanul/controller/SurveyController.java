@@ -33,10 +33,10 @@ public class SurveyController {
                 .map(movieList -> {
                     Map<String, Object> movieMap = new HashMap<>();
                     movieMap.put("movieId", movieList.get(0));
-                    movieMap.put("genreName", movieList.get(1));
-                    movieMap.put("itemDetail", movieList.get(2));
-                    movieMap.put("itemNm", movieList.get(3));
-                    movieMap.put("posterUrl", movieList.get(4));
+                    movieMap.put("genreName", movieList.get(3));
+                    movieMap.put("itemDetail", movieList.get(4));
+                    movieMap.put("itemNm", movieList.get(5));
+                    movieMap.put("posterUrl", movieList.get(7));
                     // You can add more key-value pairs if needed
                     return movieMap;
                 })
