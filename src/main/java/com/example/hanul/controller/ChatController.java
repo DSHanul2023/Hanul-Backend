@@ -54,15 +54,16 @@ public class ChatController {
                 String action = dialogflowResponse.getQueryResult().getAction();
 
                 long dialogflowEndTime = System.currentTimeMillis(); // Dialogflow 통신 종료 시간 기록
+                logger.info("dialogflow 통신: {}", (dialogflowEndTime-dialogflowStartTime));
 
-                logger.info("[사용자 채팅 저장 및 응답] 입력: {} 응답: {} 액션: {}", userMessage, dialogflowResponse, action);
+                logger.info("[사용자 채팅 저장 및 응답] 입력: {} 응답: {} 액션: {}", userMessage, fullfillmentText, action);
 
                 String botResponseContent;
 
                 boolean recommend_status = false;
                 if(userMessage.contains("추천")){
                     recommend_status = true;
-                    botResponseContent = dialogflowResponse + "\n 그럴때 이런 영화는 어때요?";
+                    botResponseContent = fullfillmentText + "\n 그럴때 이런 영화는 어때요?";
                 }
                 else if ("listen.support".equals(action)) {
                     botResponseContent = flaskService.chatWithFlask(userMessage); // flaskService를 이용한 응답
