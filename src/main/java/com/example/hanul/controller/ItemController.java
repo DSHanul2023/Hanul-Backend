@@ -177,6 +177,19 @@ public class ItemController {
         }
     }
 
+    // 북마크 삭제
+    @DeleteMapping("/{itemId}/deletebookmark/{memberId}")
+    public ResponseEntity<String> deleteBookmark(@PathVariable String memberId, @PathVariable String itemId) {
+        try {
+            // memberId와 itemId를 사용하여 북마크 삭제 서비스 호출
+            MemberEntity member = memberService.getMemberById(memberId);
+            itemService.deleteBookmark(member, itemId);
+            return ResponseEntity.ok("Bookmark removed successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to remove bookmark.");
+        }
+    }
+
     // 해당 item에 북마크한 member 정보
     @GetMapping("/{itemId}/bookmarked-members")
     public ResponseEntity<List<MemberEntity>> getBookmarkedMembers(@PathVariable String itemId) {

@@ -57,6 +57,14 @@ public class MemberService {
 
     // 회원 생성
     public MemberEntity createMember(MemberDTO memberDTO) {
+        // 이메일 중복 확인
+        String email = memberDTO.getEmail();
+        MemberEntity existingMember = memberRepository.findByEmail(email);
+        if (existingMember != null) {
+            // 이미 존재하는 이메일이면 null 반환
+            return null;
+        }
+
         MemberEntity memberEntity = new MemberEntity();
         memberEntity.setName(memberDTO.getName());
         memberEntity.setEmail(memberDTO.getEmail());
@@ -159,6 +167,7 @@ public class MemberService {
             memberDTO.setId(memberId);
             memberDTO.setName(memberEntity.getName());
             memberDTO.setEmail(memberEntity.getEmail());
+            memberDTO.setPassword(memberEntity.getPassword());
             memberDTO.setProfilePictureName(memberEntity.getProfilePictureName());
             return memberDTO;
         }
