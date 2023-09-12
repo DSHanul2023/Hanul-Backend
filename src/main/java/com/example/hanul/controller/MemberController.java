@@ -3,6 +3,7 @@ package com.example.hanul.controller;
 import com.example.hanul.dto.MemberDTO;
 import com.example.hanul.model.ItemEntity;
 import com.example.hanul.model.MemberEntity;
+import com.example.hanul.service.ChatService;
 import com.example.hanul.service.ItemService;
 import com.example.hanul.service.MemberService;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,18 +12,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @RestController
 @RequestMapping("/members")
 public class MemberController {
     private final MemberService memberService;
+    private final ChatService chatService;
 
-    public MemberController(MemberService memberService) {
+    public MemberController(MemberService memberService, ChatService chatService) {
         this.memberService = memberService;
+        this.chatService = chatService;
     }
 
     @PostMapping("/register")
@@ -64,6 +70,26 @@ public class MemberController {
         memberService.logout();
         return ResponseEntity.ok("{\"message\": \"Logout successful\"}");
     }
+
+    @PostMapping("/{memberid}/logout")
+    public ResponseEntity<Object> logoutdata(@PathVariable("memberid") String memberId) {
+        // memberId를 사용하여 해당 멤버의 채팅 데이터를 삭제
+        boolean chatDataDeleted = chatService.deleteChatDataForUser(memberId);
+
+        if (chatDataDeleted) {
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+            HttpSession session = request.getSession(false);
+
+            if (session != null) {
+                session.invalidate();
+            }
+
+            return ResponseEntity.ok("{\"message\": \"Logout successful\"}");
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"message\": \"Failed to delete chat data\"}");
+        }
+    }
+
 
     @GetMapping("/getMemberInfo")
     public ResponseEntity<MemberDTO> getMemberInfo(HttpServletRequest request) {
