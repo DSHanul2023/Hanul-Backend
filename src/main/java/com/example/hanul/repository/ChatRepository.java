@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface ChatRepository extends JpaRepository<ChatEntity, String> {
     List<ChatEntity> findAllByMemberOrderByTimestampDesc(MemberEntity member);
+    void deleteByMember(MemberEntity member);
 }

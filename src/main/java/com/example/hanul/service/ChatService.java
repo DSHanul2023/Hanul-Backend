@@ -7,6 +7,7 @@ import com.example.hanul.repository.ChatRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -41,5 +42,22 @@ public class ChatService {
             return chatRepository.findAllByMemberOrderByTimestampDesc(member);
         }
         return null;
+    }
+
+    @Transactional
+    public boolean deleteChatDataForUser(String memberId) {
+        try {
+            MemberEntity member = memberService.getMemberById(memberId);
+            if (member != null) {
+                // 해당 회원과 관련된 채팅 메시지 데이터를 삭제하는 로직을 구현
+                chatRepository.deleteByMember(member);
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            // 삭제 중에 예외가 발생한 경우
+            e.printStackTrace(); // 예외 로그를 출력하거나 처리할 수 있음
+            return false;
+        }
     }
 }

@@ -249,4 +249,28 @@ public class ItemService {
         return null;
     }
 
+    public void deleteBookmark(MemberEntity member, String itemId) {
+        try {
+            ItemEntity itemEntity = itemRepository.findById(itemId)
+                    .orElseThrow(() -> new EntityNotFoundException("Item not found"));
+
+            List<ItemEntity> bookmarkedItems = member.getBookmarkedItems();
+
+            // 북마크 목록에서 해당 아이템 제거
+            bookmarkedItems.remove(itemEntity);
+
+            // itemEntity의 "bookmarkedByMembers" 필드에서도 Member 제거
+            itemEntity.getBookmarkedByMembers().remove(member);
+
+            // 변경된 정보 저장
+            itemRepository.save(itemEntity);
+        } catch (DataAccessException e) {
+            log.error("북마크 삭제 중 데이터 접근 오류가 발생하였습니다.", e);
+        } catch (EntityNotFoundException e) {
+            log.error("북마크 삭제 중 아이템을 찾을 수 없습니다.", e);
+        } catch (Exception e) {
+            log.error("북마크 삭제 중 오류가 발생하였습니다.", e);
+        }
+    }
+
 }
