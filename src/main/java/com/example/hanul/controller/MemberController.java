@@ -171,4 +171,21 @@ public class MemberController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    // 비밀번호 잊은 경우
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        memberService.forgotPassword(request.getEmail());
+        return ResponseEntity.ok("임시 비밀번호가 이메일로 전송되었습니다.");
+    }
+
+    static class ForgotPasswordRequest {
+        private String email;
+        public String getEmail() {
+            return email;
+        }
+        public void setEmail(String email) {
+            this.email = email;
+        }
+    }
 }

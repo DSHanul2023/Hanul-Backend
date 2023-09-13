@@ -25,6 +25,7 @@ import java.util.Date;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -48,6 +49,9 @@ public class MemberService {
 //    public MemberService(MemberRepository memberRepository) {
 //        this.memberRepository = memberRepository;
 //    }
+
+    @Autowired
+    private MailService mailService;
 
     @Autowired
     public MemberService(MemberRepository memberRepository, TokenProvider tokenProvider) {
@@ -262,5 +266,33 @@ public class MemberService {
 
     public List<ItemEntity> getBookmarkedItems(MemberEntity member) {
         return member.getBookmarkedItems();
+    }
+
+    public void forgotPassword(String email) {
+        MemberEntity member = memberRepository.findByEmail(email);
+        if (member != null) {
+            String temporaryPassword = generateTemporaryPassword();
+            member.setPassword(passwordEncoder.encode(temporaryPassword));
+            memberRepository.save(member);
+            sendTemporaryPasswordByEmail(email, temporaryPassword);
+        }
+    }
+
+    private String generateTemporaryPassword() {
+        // 임시 비밀번호 생성
+        Random random = new Random();
+        int temporaryPasswordLength = 8; // 임시 비밀번호 길이
+        StringBuilder temporaryPassword = new StringBuilder();
+        for (int i = 0; i < temporaryPasswordLength; i++) {
+            temporaryPassword.append(random.nextInt(10)); // 0부터 9까지의 랜덤 숫자
+        }
+        return temporaryPassword.toString();
+    }
+
+    private void sendTemporaryPasswordByEmail(String email, String temporaryPassword) {
+        // 이메일로 임시 비밀번호를 보내는 코드를 구현
+        // Spring의 JavaMailSender를 사용하여 이메일을 전송할 수 있음
+        // MailService 클래스의 sendTemporaryPasswordByEmail 메서드를 호출
+        mailService.sendTemporaryPasswordByEmail(email, temporaryPassword);
     }
 }
