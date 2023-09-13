@@ -268,13 +268,17 @@ public class MemberService {
         return member.getBookmarkedItems();
     }
 
-    public void forgotPassword(String email) {
+    public Boolean forgotPassword(String email) {
         MemberEntity memberEntity = memberRepository.findByEmail(email);
         if (memberEntity != null) {
             String temporaryPassword = generateTemporaryPassword();
             memberEntity.setPassword(temporaryPassword);
             memberRepository.save(memberEntity);
             sendTemporaryPasswordByEmail(email, temporaryPassword);
+            return true;
+        }
+        else{
+            return false;
         }
     }
 

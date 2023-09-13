@@ -175,8 +175,13 @@ public class MemberController {
     // 비밀번호 잊은 경우
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
-        memberService.forgotPassword(request.getEmail());
-        return ResponseEntity.ok("임시 비밀번호가 이메일로 전송되었습니다.");
+        Boolean ismemberex = memberService.forgotPassword(request.getEmail());
+        if(ismemberex == true) {
+            return ResponseEntity.ok("임시 비밀번호가 이메일로 전송되었습니다.");
+        }
+        else{
+            return ResponseEntity.ok("이메일을 다시 입력해주세요.");
+        }
     }
 
     static class ForgotPasswordRequest {
