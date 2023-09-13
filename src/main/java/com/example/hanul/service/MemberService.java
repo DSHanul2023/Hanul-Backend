@@ -269,11 +269,11 @@ public class MemberService {
     }
 
     public void forgotPassword(String email) {
-        MemberEntity member = memberRepository.findByEmail(email);
-        if (member != null) {
+        MemberEntity memberEntity = memberRepository.findByEmail(email);
+        if (memberEntity != null) {
             String temporaryPassword = generateTemporaryPassword();
-            member.setPassword(passwordEncoder.encode(temporaryPassword));
-            memberRepository.save(member);
+            memberEntity.setPassword(temporaryPassword);
+            memberRepository.save(memberEntity);
             sendTemporaryPasswordByEmail(email, temporaryPassword);
         }
     }
