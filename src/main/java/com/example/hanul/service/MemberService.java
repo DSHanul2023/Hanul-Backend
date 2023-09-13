@@ -25,6 +25,7 @@ import java.util.Date;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -50,6 +51,9 @@ public class MemberService {
 //    }
 
     @Autowired
+    private MailService mailService;
+
+    @Autowired
     public MemberService(MemberRepository memberRepository, TokenProvider tokenProvider) {
         this.memberRepository = memberRepository;
         this.tokenProvider = tokenProvider;
@@ -57,6 +61,14 @@ public class MemberService {
 
     // 회원 생성
     public MemberEntity createMember(MemberDTO memberDTO) {
+        // 이메일 중복 확인
+        String email = memberDTO.getEmail();
+        MemberEntity existingMember = memberRepository.findByEmail(email);
+        if (existingMember != null) {
+            // 이미 존재하는 이메일이면 null 반환
+            return null;
+        }
+
         MemberEntity memberEntity = new MemberEntity();
         memberEntity.setName(memberDTO.getName());
         memberEntity.setEmail(memberDTO.getEmail());
@@ -159,6 +171,7 @@ public class MemberService {
             memberDTO.setId(memberId);
             memberDTO.setName(memberEntity.getName());
             memberDTO.setEmail(memberEntity.getEmail());
+            memberDTO.setPassword(memberEntity.getPassword());
             memberDTO.setProfilePictureName(memberEntity.getProfilePictureName());
             return memberDTO;
         }
@@ -253,5 +266,37 @@ public class MemberService {
 
     public List<ItemEntity> getBookmarkedItems(MemberEntity member) {
         return member.getBookmarkedItems();
+    }
+
+    public Boolean forgotPassword(String email) {
+        MemberEntity memberEntity = memberRepository.findByEmail(email);
+        if (memberEntity != null) {
+            String temporaryPassword = generateTemporaryPassword();
+            memberEntity.setPassword(temporaryPassword);
+            memberRepository.save(memberEntity);
+            sendTemporaryPasswordByEmail(email, temporaryPassword);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    private String generateTemporaryPassword() {
+        // 임시 비밀번호 생성
+        Random random = new Random();
+        int temporaryPasswordLength = 8; // 임시 비밀번호 길이
+        StringBuilder temporaryPassword = new StringBuilder();
+        for (int i = 0; i < temporaryPasswordLength; i++) {
+            temporaryPassword.append(random.nextInt(10)); // 0부터 9까지의 랜덤 숫자
+        }
+        return temporaryPassword.toString();
+    }
+
+    private void sendTemporaryPasswordByEmail(String email, String temporaryPassword) {
+        // 이메일로 임시 비밀번호를 보내는 코드를 구현
+        // Spring의 JavaMailSender를 사용하여 이메일을 전송할 수 있음
+        // MailService 클래스의 sendTemporaryPasswordByEmail 메서드를 호출
+        mailService.sendTemporaryPasswordByEmail(email, temporaryPassword);
     }
 }
