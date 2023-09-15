@@ -11,6 +11,8 @@ import java.util.List;
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProviderDTO {
+    private String tmdb_id;
+
     @JsonProperty("link")
     private String link;
 
@@ -18,7 +20,7 @@ public class ProviderDTO {
     private List<ProviderInfoDTO> buy;
 
     @JsonProperty("flatrate")
-    private List<ProviderInfoDTO> stream;
+    private List<ProviderInfoDTO> flatrate;
 
     @JsonProperty("rent")
     private List<ProviderInfoDTO> rent;

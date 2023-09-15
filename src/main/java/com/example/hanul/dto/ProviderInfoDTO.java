@@ -16,8 +16,10 @@ public class ProviderInfoDTO {
     private int providerId;
 
     @JsonProperty("provider_name")
-    private String providerName;
+    private String provider_name;
 
     @JsonProperty("display_priority")
     private int displayPriority;
+
+    private String url;
 }
