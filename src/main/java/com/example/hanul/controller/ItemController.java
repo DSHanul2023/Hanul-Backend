@@ -7,6 +7,7 @@ import com.example.hanul.response.*;
 import com.example.hanul.service.FlaskService;
 import com.example.hanul.service.ItemService;
 import com.example.hanul.service.MemberService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,7 @@ import reactor.core.publisher.Mono;
 import org.springframework.data.domain.Pageable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -127,7 +129,7 @@ public class ItemController {
                             String certification = releaseInfo.getCertification();
                             // 여기에서 certification 값을 사용할 수 있습니다.
                             if ("18".equals(certification) || "Restricted Screening".equals(certification)
-                                    || "19+".equals(certification) || "Limited".equals(certification)) {
+                                    || "19+".equals(certification) || "Limited".equals(certification) || "".equals(certification)) {
                                 itemService.deleteAdultMovie(item.getId());
                                 count++;
                                 break;
@@ -146,6 +148,62 @@ public class ItemController {
         ProviderDTO krProvider;
         krProvider = itemService.getProviders(movieId);
         return ResponseEntity.status(HttpStatus.OK).body(krProvider);
+    }
+
+    @GetMapping("/providers/{movieId}")
+    public ResponseEntity<?> getProvidersWithFlask(@PathVariable String movieId) {
+        try {
+            // Flask 서버에서 데이터 가져오기
+            ProviderDTO flaskResponse = flaskService.ProvidersWithFlask(movieId);
+            ProviderDTO providerDTO = itemService.getProviders(movieId);
+            ProviderDTO responseDTO = new ProviderDTO();
+
+            if (flaskResponse != null) {
+                // Spring Boot 서버에서 가져온 데이터를 조합
+                if (providerDTO != null) {
+                    providerDTO.setTmdb_id(flaskResponse.getTmdb_id());
+                    // providerDTO의 데이터를 그대로 가져와서 URL만 추가
+                    if (providerDTO.getBuy() != null) {
+                        for (ProviderInfoDTO providerInfoDTO : providerDTO.getBuy()) {
+                            for(ProviderInfoDTO flaskInfoDTO : flaskResponse.getBuy()){
+                                if(providerInfoDTO.getProvider_name().equals(flaskInfoDTO.getProvider_name())){
+                                    providerInfoDTO.setUrl(flaskInfoDTO.getUrl());
+                                }
+                            }
+                        }
+                    }
+
+                    if (providerDTO.getFlatrate() != null) {
+                        for (ProviderInfoDTO providerInfoDTO : providerDTO.getFlatrate()) {
+                            for(ProviderInfoDTO flaskInfoDTO : flaskResponse.getFlatrate()){
+                                if(providerInfoDTO.getProvider_name().equals(flaskInfoDTO.getProvider_name())){
+                                    providerInfoDTO.setUrl(flaskInfoDTO.getUrl());
+                                }
+                            }
+                        }
+                    }
+
+                    if (providerDTO.getRent() != null) {
+                        for (ProviderInfoDTO providerInfoDTO : providerDTO.getRent()) {
+                            for(ProviderInfoDTO flaskInfoDTO : flaskResponse.getRent()){
+                                if(providerInfoDTO.getProvider_name().equals(flaskInfoDTO.getProvider_name())){
+                                    providerInfoDTO.setUrl(flaskInfoDTO.getUrl());
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 조합된 데이터를 JSON 형식으로 반환
+                return ResponseEntity.status(HttpStatus.OK).body(providerDTO);
+            } else {
+                // 플라스크 서버로부터 데이터를 받지 못한 경우 에러 응답을 반환
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch data from Flask server.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error.");
+        }
     }
 
     @GetMapping("/keywords/{movieId}")
