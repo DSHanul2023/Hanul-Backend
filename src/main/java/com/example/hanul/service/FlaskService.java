@@ -1,5 +1,7 @@
 package com.example.hanul.service;
 
+import com.example.hanul.dto.ProviderDTO;
+import com.example.hanul.dto.ProviderInfoDTO;
 import com.example.hanul.model.ItemEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -105,4 +107,22 @@ public class FlaskService {
 
         return items;
     }
+
+    public ProviderDTO ProvidersWithFlask(String itemId){
+        try {
+            String providerUrl = flaskBaseUrl + "/providers?item_id=" + itemId;
+
+            // RestTemplate을 사용하여 플라스크 서버에 GET 요청 전송
+            ResponseEntity<ProviderDTO> responseEntity = restTemplate.getForEntity(providerUrl, ProviderDTO.class);
+
+            // 플라스크 서버로부터 받은 JSON 응답 데이터
+            ProviderDTO responseBody = responseEntity.getBody();
+
+            return responseBody;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }
