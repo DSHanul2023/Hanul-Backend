@@ -154,7 +154,19 @@ public class CommentController {
             return ResponseEntity.badRequest().body(response);
         }
     }
-
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllComments() {
+        try {
+            List<CommentEntity> comments = commentRepository.findAll();
+            List<CommentDTO> commentDTOs = comments.stream().map(CommentDTO::new).collect(Collectors.toList());
+            ResponseDTO<CommentDTO> response = ResponseDTO.<CommentDTO>builder().data(commentDTOs).build();
+            return ResponseEntity.ok().body(response);
+        } catch (Exception e) {
+            String error = e.getMessage();
+            ResponseDTO<CommentDTO> response = ResponseDTO.<CommentDTO>builder().error(error).build();
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 
 }
 
