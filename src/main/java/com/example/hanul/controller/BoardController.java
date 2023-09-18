@@ -57,7 +57,7 @@ public class BoardController {
             entity.setType(type);
             entity.setAuthor(member.get().getName());
             entity.setMemberId(member.get().getId());
-            entity.setDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            entity.setDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
             if (image != null) {
                 if (!image.isEmpty()) {
                     service.saveImage(image,entity);
