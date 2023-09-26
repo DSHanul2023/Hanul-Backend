@@ -63,7 +63,10 @@ public class ChatController {
                 boolean recommend_status = false;
                 if(userMessage.contains("추천")){
                     recommend_status = true;
-                    botResponseContent = fullfillmentText + "\n 그럴때 이런 영화는 어때요?";
+                    // botResponseContent = fullfillmentText + "\n 그럴때 이런 영화는 어때요?";
+                    String emotion = flaskService.emotionWithFlask(userMessage);
+                    DetectIntentResponse recommendResponse = dialogflowService.sendRecommendToDialogflow(userMessage, emotion);
+                    botResponseContent = recommendResponse.getQueryResult().getFulfillmentText();
                 }
                 else if ("listen.support".equals(action)) {
                     botResponseContent = flaskService.chatWithFlask(userMessage); // flaskService를 이용한 응답
