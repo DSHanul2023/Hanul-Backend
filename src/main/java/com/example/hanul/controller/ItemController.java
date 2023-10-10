@@ -270,4 +270,9 @@ public class ItemController {
         return ResponseEntity.status(HttpStatus.OK).body(recommendedItems);
     }
 
+    @GetMapping("/emotion2/{memberId}")
+    public ResponseEntity<String> emotionFromFlask(@PathVariable String memberId) {
+        String emotion = flaskService.emotionWithFlask2(memberId);
+        return ResponseEntity.ok(emotion);
+    }
 }
