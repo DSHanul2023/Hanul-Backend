@@ -75,6 +75,18 @@ public class FlaskService {
         }
     }
 
+    public String emotionWithFlask2(String memberId) {
+        try {
+            String emotionUrl = flaskBaseUrl + "/emotion2?memberId=" + memberId;
+            ResponseEntity<String> responseEntity = restTemplate.getForEntity(emotionUrl, String.class);
+            return responseEntity.getBody();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
     // Flask에서 받은 JSON 응답을 ItemEntity 객체 리스트로 변환하는 함수
     public List<ItemEntity> RecommendWithFlask(String memberId) {
         String jsonResponse = sendGetRequestToFlask(memberId);
