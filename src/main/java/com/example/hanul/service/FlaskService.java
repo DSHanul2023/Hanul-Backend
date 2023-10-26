@@ -75,6 +75,18 @@ public class FlaskService {
         }
     }
 
+    public String emotionWithFlask2(String memberId) {
+        try {
+            String emotionUrl = flaskBaseUrl + "/emotion2?memberId=" + memberId;
+            ResponseEntity<String> responseEntity = restTemplate.getForEntity(emotionUrl, String.class);
+            return responseEntity.getBody();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
     // Flask에서 받은 JSON 응답을 ItemEntity 객체 리스트로 변환하는 함수
     public List<ItemEntity> RecommendWithFlask(String memberId) {
         String jsonResponse = sendGetRequestToFlask(memberId);
@@ -125,29 +137,14 @@ public class FlaskService {
         }
     }
 
-    public String emotionWithFlask(String question) {
+    public String emotionWithFlask(String memberId) {
         try {
-            String chatUrl = flaskBaseUrl + "/emotion";
-
-            // Flask 서버에 보낼 JSON 데이터 생성
-            String requestData = String.format("{\"sentence\": \"%s\"}", question);
-
-            // HTTP 요청 헤더 설정
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            // HTTP 요청 엔티티 생성
-            HttpEntity<String> requestEntity = new HttpEntity<>(requestData, headers);
-
-            // RestTemplate을 사용하여 플라스크 서버에 POST 요청 전송
-            ResponseEntity<String> responseEntity = restTemplate.postForEntity(chatUrl, requestEntity, String.class);
-
-            // 플라스크 서버로부터 받은 JSON 응답 데이터
-            String responseBody = responseEntity.getBody();
-
-            return responseBody;
+            String emotionUrl = flaskBaseUrl + "/emotion2?memberId=" + memberId;
+            ResponseEntity<String> responseEntity = restTemplate.getForEntity(emotionUrl, String.class);
+            return responseEntity.getBody();
         } catch (Exception e) {
-            return e.toString();
+            e.printStackTrace();
+            return null;
         }
     }
 
