@@ -229,8 +229,14 @@ public class ItemService {
 
                 return itemRepository.save(itemEntity);
             } else {
-                // 이미 북마크된 아이템인 경우 기존 아이템 반환
-                log.warn("이미 북마크된 아이템입니다.");
+                // 이미 북마크된 아이템인 경우 기존 아이템 제거
+                bookmarkedItems.remove(itemEntity);
+
+                // itemEntity의 "bookmarkedByMembers" 필드에서 Member 제거
+                itemEntity.getBookmarkedByMembers().remove(member);
+
+                log.warn("북마크 취소");
+                itemRepository.save(itemEntity);
                 return null;
             }
         } catch (DataAccessException e) {
