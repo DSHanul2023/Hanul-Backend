@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import org.springframework.data.domain.Pageable;
@@ -110,38 +111,48 @@ public class ItemController {
 
     @DeleteMapping("/deleteAdultItem")
     public ResponseEntity<String> deleteAdultItem() {
-        int count=0;
+        int count = 0;
         for (ItemEntity item : itemService.getAllItems()) {
-            // 이미 등록된 영화 중 성인영화가 존재하면 삭제
             String releaseDatesUrl = "https://api.themoviedb.org/3/movie/" + item.getId() + "/release_dates?api_key=" + apiKey;
 
-            Mono<ReleaseDateListResponse> releaseDateResponseMono = webClient.get()
-                    .uri(releaseDatesUrl)
-                    .retrieve()
-                    .bodyToMono(ReleaseDateListResponse.class);
+            try {
+                Mono<ReleaseDateListResponse> releaseDateResponseMono = webClient.get()
+                        .uri(releaseDatesUrl)
+                        .retrieve()
+                        .bodyToMono(ReleaseDateListResponse.class);
 
-            ReleaseDateListResponse releaseDateListResponse = releaseDateResponseMono.block();
+                ReleaseDateListResponse releaseDateListResponse = releaseDateResponseMono.block();
 
-            if (releaseDateListResponse != null) {
-                for (ReleaseDateDTO releaseDate : releaseDateListResponse.getResults()) {
-                    if ("KR".equals(releaseDate.getRegion())) {
-                        for (ReleaseInfoDTO releaseInfo : releaseDate.getRelease_dates()) {
-                            String certification = releaseInfo.getCertification();
-                            // 여기에서 certification 값을 사용할 수 있습니다.
-                            if ("18".equals(certification) || "Restricted Screening".equals(certification)
-                                    || "19+".equals(certification) || "Limited".equals(certification) || "".equals(certification)) {
-                                itemService.deleteAdultMovie(item.getId());
-                                count++;
-                                break;
+                if (releaseDateListResponse != null) {
+                    for (ReleaseDateDTO releaseDate : releaseDateListResponse.getResults()) {
+                        if ("KR".equals(releaseDate.getRegion())) {
+                            for (ReleaseInfoDTO releaseInfo : releaseDate.getRelease_dates()) {
+                                String certification = releaseInfo.getCertification();
+                                // 여기에서 certification 값을 사용할 수 있습니다.
+                                if ("18".equals(certification) || "Restricted Screening".equals(certification)
+                                        || "19+".equals(certification) || "Limited".equals(certification) || "".equals(certification)) {
+                                    itemService.deleteAdultMovie(item.getId());
+                                    count++;
+                                    break;
+                                }
                             }
+                            break;
                         }
-                        break;
                     }
                 }
+                // 줄거리 없으면 제외
+                if(item.getItemDetail().equals("")) itemService.deleteAdultMovie(item.getId());
+                // 키워드 없으면 제외
+                if(item.getKeyword().equals("")) itemService.deleteAdultMovie(item.getId());
+            } catch (WebClientResponseException.NotFound ex) {
+                // 만약 해당 URL로 영화 정보를 가져올 수 없는 경우, 여기에 삭제 코드를 추가
+                itemService.deleteAdultMovie(item.getId());
+                count++;
             }
         }
-        return ResponseEntity.ok("총 " + count +"개의 성인영화가 삭제되었습니다.");
+        return ResponseEntity.ok("총 " + count + "개의 성인영화가 삭제되었습니다.");
     }
+
 
     @GetMapping("/provider/{movieId}")
     public ResponseEntity<ProviderDTO> getProviders(@PathVariable String movieId){
