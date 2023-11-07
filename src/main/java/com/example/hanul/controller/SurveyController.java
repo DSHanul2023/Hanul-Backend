@@ -56,7 +56,7 @@ public class SurveyController {
 
     private ResponseEntity<Map> sendRequestToFlask(List<String> selectedItems) {
         try {
-            String flaskUrl = "http://localhost:5000/survey";
+            String flaskUrl = "http://3.34.166.72/survey";
 
             ObjectMapper objectMapper = new ObjectMapper();
             String requestData = objectMapper.writeValueAsString(Map.of("selectedItems", selectedItems));
