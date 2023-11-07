@@ -19,7 +19,7 @@ import org.json.JSONObject;
 @Service
 public class FlaskService {
     private final RestTemplate restTemplate;
-    private final String flaskBaseUrl = "http://localhost:5000";
+    private final String flaskBaseUrl = "http://3.34.166.72";
     private final ItemService itemService;
 
     @Autowired
