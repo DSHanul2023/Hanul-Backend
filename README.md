@@ -2,9 +2,9 @@
 Backend 완성본
 
 ## Demonstration video
-최종 결과물 시연 영상
+!최종 결과물 시연 영상
 https://drive.google.com/file/d/169lrsR1uvXOvaUwd7PUo9AbA7ArDlu7L/view?usp=sharing
-중간 결과물 시연 영상 - 자막 설명 O
+!중간 결과물 시연 영상 - 자막 설명 O
 https://drive.google.com/file/d/1O8J9JzyTLuCX4OO8brG8q5OUO2SSy6fR/view?usp=sharing
 
 ## Result
