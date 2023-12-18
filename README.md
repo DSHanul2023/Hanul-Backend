@@ -3,16 +3,16 @@
 ## 팀원 소개
 <table>
   <tr>
-    <td><a href="https://github.com/pjho4746">박지호(PM)</a></td>
-    <td>서채은</td>
-    <td>김서영</td>
-    <td>이재현</td>
+    <td align="center"><a href="https://github.com/pjho4746">박지호(PM)</a></td>
+    <td align="center">서채은</td>
+    <td align="center">김서영</td>
+    <td align="center">이재현</td>
   </tr>
   <tr>
-    <td>pjho4746@gmail.com</td>
-    <td>@gmail.com</td>
-    <td>@gmail.com</td>
-    <td>@gmail.com</td>
+    <td align="center">pjho4746@gmail.com</td>
+    <td align="center">@gmail.com</td>
+    <td align="center">@gmail.com</td>
+    <td align="center">@gmail.com</td>
   </tr>
   <tr>
     <td align="center">풀스택 개발자</td>
@@ -27,6 +27,7 @@
     <td align="center"><img src="https://github.com/DSHanul2023/Hanul-Backend/assets/126854628/6a9a0a7d-4678-4558-b8db-565e6b9c9869?raw=true" width="100px"></td>
   </tr>
 </table>
+
 
 
 
