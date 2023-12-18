@@ -45,20 +45,23 @@ https://drive.google.com/file/d/1O8J9JzyTLuCX4OO8brG8q5OUO2SSy6fR/view?usp=shari
 ![프로그램 흐름](https://github.com/DSHanul2023/Hanul-Backend/assets/126854628/19275386-fb62-4c02-b8d3-0a5ff4e3a0a2)
 
 ## 기술 아키텍쳐
-![아키텍처 설계도](https://github.com/DSHanul2023/Hanul-Backend/assets/126854628/7f539ddd-f7f6-4a83-b2f6-81ef6da5ebeb)
+![아키텍처](https://github.com/DSHanul2023/Hanul-Backend/assets/126854628/59080cd0-ae92-446d-bea6-c119fb041ec0)
 
 ## 메인 기능
 1. 챗봇 서비스  
 Dialogflow의 action을 기반으로 인사, 위로 및 조언, 추천 순서의 대화 흐름을 가지고 있습니다. Dialogflow Webhook을 통해 사용자의 입력을 처리하며, action이 위로 및 조언인 경우 Flask를 통해 생성된 KoGPT2 모델의 응답을 반환합니다. 이 모델은 고민 상담 목적의 챗봇을 위해 파인 튜닝 되었으며, 사용자의 고민에 대해 부드럽게 반응하고 공감하며 조언을 제공하는 데 중점을 두었습니다. 생성 모델은 미리 학습된 가중치를 기반으로 사용자의 입력 문장을 받아 응답을 생성합니다. 모델 훈련 과정에서는 Aihub의 웰니스 대화 스크립트 데이터셋이 사용되었으며 Cross Entropy Loss와 Adam Optimizer를 사용하여 진행하였습니다.
 ![챗봇서비스](https://github.com/DSHanul2023/Hanul-Backend/assets/126854628/d56d894f-f0f4-46cc-839f-90c16189a72e)
 
-2.  감정 분류 & 맞춤 영화 추천  
-감성 분류 모델은 사용자의 발화에서 감성을 분류합니다. 감성 분류 모델은 웰니스 대화 스크립트 데이터셋 (AI허브)와 한국어 단발성 대화 데이터셋 (AI허브)을 사용하여 kobert에 학습하였습니다. 분류된 감성은 미리 정의된 장르로 매핑됩니다. <br><br>
+2.  감정 분류
+감성 분류 모델은 사용자의 발화에서 감성을 분류합니다. 감성 분류 모델은 웰니스 대화 스크립트 데이터셋 (AI허브)와 한국어 단발성 대화 데이터셋 (AI허브)을 사용하여 kobert에 학습하였습니다.
+![감정분류](https://github.com/DSHanul2023/Hanul-Backend/assets/126854628/42a46f7e-19c6-4ec7-a220-cadaa9537f75)
+분류된 감성은 미리 정의된 장르로 매핑됩니다. <br><br>
+
+3. 맞춤 영화 추천
 매핑된 장르를 기반으로 영화를 1차 필터링한다.  
 (1) 사용자 발화를 벡터화하여 영화 줄거리 간의 코사인 유사도를 계산한다.  
 (2) 사용자 선호 영화와 1차 필터링된 영화의 메타데이터(키워드, 감독, 배우, 장르)를 계산하여 유사도를 계산한다.  <br><br>
 (1)과 (2)의 결과를 더해 정규화하여 결괏값이 높은 순으로 추천 영화 8개를 추천합니다. 이와 같은 흐름으로 사용자는 채팅을 기반으로 맞춤 영화를 추천받을 수 있습니다.
-![감정분류](https://github.com/DSHanul2023/Hanul-Backend/assets/126854628/8c3ad931-ab39-440c-b61e-ad5ba69f467d)
 ![맞춤영화 추천](https://github.com/DSHanul2023/Hanul-Backend/assets/126854628/3aaf1ccc-d0ed-4bca-a9b1-e6f9bf717a51)
 
 4. 영화 스트리밍 연결  
