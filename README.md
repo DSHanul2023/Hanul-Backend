@@ -20,6 +20,9 @@ https://drive.google.com/file/d/169lrsR1uvXOvaUwd7PUo9AbA7ArDlu7L/view?usp=shari
 중간 결과물 - 자막 설명 O  
 https://drive.google.com/file/d/1O8J9JzyTLuCX4OO8brG8q5OUO2SSy6fR/view?usp=sharing 
 
+## 프로그램 흐름
+![프로그램 흐름](https://github.com/DSHanul2023/Hanul-Backend/assets/126854628/19275386-fb62-4c02-b8d3-0a5ff4e3a0a2)
+
 ## 기술 아키텍쳐
 
 
