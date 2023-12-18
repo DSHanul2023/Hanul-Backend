@@ -4,9 +4,9 @@ We:Lover - 심리 상담 AI 챗봇 기반 이야기 치료법 제공 서비스
 <table>
   <tr>
     <td align="center"><a href="https://github.com/pjho4746">박지호(PM)</a></td>
-    <td align="center">서채은</td>
-    <td align="center">김서영</td>
-    <td align="center">이재현</td>
+    <td align="center"><a href="https://github.com/seoyeong12">서채은</td>
+    <td align="center"><a href="https://github.com/chaeeunnn">김서영</td>
+    <td align="center"><a href="https://github.com/jayy118">이재현</td>
   </tr>
   <tr>
     <td align="center">pjho4746@gmail.com</td>
