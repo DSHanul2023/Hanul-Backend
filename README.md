@@ -80,7 +80,7 @@ https://drive.google.com/file/d/169lrsR1uvXOvaUwd7PUo9AbA7ArDlu7L/view?usp=shari
 https://drive.google.com/file/d/1O8J9JzyTLuCX4OO8brG8q5OUO2SSy6fR/view?usp=sharing 
 
 ---
-### 📍 최종 결과물
+### 📍 활동
 **고민 상담 챗봇 기반 영화 추천 시스템** <br>
 *투고 날짜 : 2023.09.20* <br>
 *논문 번호 : KIPS_C2023B0335* <br><br>
