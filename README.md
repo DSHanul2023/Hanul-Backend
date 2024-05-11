@@ -81,7 +81,7 @@ AI 챗봇을 활용한 고민 상담을 통해 위로 및 제안을 제공하고
 ### 📍 활동
 **고민 상담 챗봇 기반 영화 추천 시스템** <br>
 *투고 날짜 : 2023.09.20* <br>
-*논문 번호 : KIPS_C2023B0335* <br><br>
+*논문 번호 : [KIPS_C2023B0335](https://drive.google.com/file/d/1QIiD3tBWgeOqzg_iSa9Z4ZXhn7DX8XLH/view?usp=sharing)* <br><br>
 
 **한국정보산업연합회** <br>
 *이브와 ICT 멘토링* <br>
